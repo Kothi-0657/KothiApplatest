@@ -1,7 +1,7 @@
 // src/api/adminAPI.ts
 import axios from "axios";
 
-// ✅ Use Vite's import.meta.env instead of process.env
+// ✅ Use Vite environment or fallback to local IP
 const ADMIN_BASE =
   import.meta.env.VITE_ADMIN_API || "http://192.168.29.182:4000/api/admin";
 
@@ -11,7 +11,7 @@ const adminAPI = axios.create({
   timeout: 15000,
 });
 
-// ✅ Optional: Attach admin token from localStorage (if available)
+// ✅ Auto-attach admin token from localStorage
 adminAPI.interceptors.request.use(
   async (config) => {
     const token = localStorage.getItem("admin_token");

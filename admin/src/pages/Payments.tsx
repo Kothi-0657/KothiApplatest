@@ -1,43 +1,107 @@
-// src/pages/Payments.tsx
 import React, { useEffect, useState } from "react";
+import { Table, Tag, Button, message, Spin } from "antd";
 import adminAPI from "../api/adminAPI";
-import DataTable from "../components/DataTable";
 
-export default function Payments(){
+const Payments: React.FC = () => {
   const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const load = async ()=> {
-    const res = await adminAPI.get("/payments");
-    setPayments(res.data.payments);
+  const fetchPayments = async () => {
+    try {
+      const res = await adminAPI.get("/admin/payments");
+      if (res.data.success) {
+        setPayments(res.data.payments || []);
+      } else {
+        message.error(res.data.message || "Failed to load payments");
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("Error fetching payments");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(()=> { load(); }, []);
+  useEffect(() => {
+    fetchPayments();
+  }, []);
 
-  const markPaid = async (id:number) => {
-    await adminAPI.put(`/payments/${id}`, { payment_status: "paid" });
-    load();
+  const handleMarkPaid = async (id: string) => {
+    try {
+      const res = await adminAPI.put(`/admin/payments/${id}`, { payment_status: "paid" });
+      if (res.data.success) {
+        message.success("Payment marked as paid");
+        fetchPayments();
+      } else {
+        message.error("Failed to update payment");
+      }
+    } catch (err) {
+      message.error("Error updating payment");
+    }
+  };
+
+  const handleDownloadReport = async () => {
+    try {
+      const response = await adminAPI.get("/admin/payments/report", {
+        responseType: "blob",
+      });
+      const blob = new Blob([response.data], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = "payment_report.csv";
+      link.click();
+    } catch (error) {
+      message.error("Error downloading report");
+    }
   };
 
   const columns = [
-    { key: "id", label: "ID" },
-    { key: "user_name", label: "User" },
-    { key: "amount", label: "Amount", render: (r:any)=> `₹ ${r.amount}` },
-    { key: "payment_status", label: "Status" },
-    { key: "payment_method", label: "Method" },
-    { key: "created_at", label: "Date" },
-    { key: "actions", label: "Actions", render: (r:any)=> (
-      <div>
-        {r.payment_status !== "paid" && <button onClick={()=>markPaid(r.id)}>Mark Paid</button>}
-      </div>
-    ) }
+    { title: "User", dataIndex: ["userId", "name"], key: "user" },
+    { title: "Email", dataIndex: ["userId", "email"], key: "email" },
+    { title: "Amount", dataIndex: "amount", key: "amount" },
+    {
+      title: "Status",
+      dataIndex: "payment_status",
+      key: "payment_status",
+      render: (status: string) =>
+        status === "paid" ? (
+          <Tag color="green">Paid</Tag>
+        ) : (
+          <Tag color="red">Pending</Tag>
+        ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_: any, record: any) =>
+        record.payment_status !== "paid" && (
+          <Button type="primary" onClick={() => handleMarkPaid(record._id)}>
+            Mark Paid
+          </Button>
+        ),
+    },
   ];
 
   return (
-    <div>
-      <h2>Payments</h2>
-      <div style={{marginTop:16}}>
-        <DataTable columns={columns as any} data={payments as any} />
+    <div style={{ padding: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2>Payments</h2>
+        <Button onClick={handleDownloadReport} type="default">
+          Download CSV
+        </Button>
       </div>
+      {loading ? (
+        <Spin />
+      ) : (
+        <Table
+          rowKey="_id"
+          columns={columns}
+          dataSource={payments}
+          pagination={{ pageSize: 10 }}
+        />
+      )}
     </div>
   );
-}
+};
+
+export default Payments;

@@ -1,104 +1,39 @@
 import { Request, Response } from "express";
-import pool from "../config/db";
-import bcrypt from "bcryptjs";
+import pool from "../config/db"; // your PostgreSQL pool
 
-/**
- * 👥 Get all users (Admin use)
- */
+// GET /api/users
 export const getAllUsers = async (_req: Request, res: Response) => {
   try {
-    const users = await pool.query(
-      "SELECT id, name, email, phone, role, created_at FROM users ORDER BY created_at DESC"
-    );
-    res.json({ success: true, users: users.rows });
-  } catch (error) {
-    console.error("Error fetching users:", error);
+    const result = await pool.query("SELECT * FROM users ORDER BY id DESC");
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error("Error fetching users:", err);
     res.status(500).json({ success: false, message: "Failed to fetch users" });
   }
 };
 
-/**
- * 👤 Get single user by ID
- */
-export const getUserById = async (req: Request, res: Response) => {
+// PATCH /api/users/:id/status
+export const updateUserStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const result = await pool.query(
-      "SELECT id, name, email, phone, role, created_at FROM users WHERE id = $1",
-      [id]
-    );
+    const { status } = req.body;
 
-    if (!result.rows.length)
-      return res.status(404).json({ success: false, message: "User not found" });
-
-    res.json({ success: true, user: result.rows[0] });
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch user" });
+    await pool.query("UPDATE users SET status=$1 WHERE id=$2", [status, id]);
+    res.json({ success: true, message: "User status updated" });
+  } catch (err) {
+    console.error("Error updating user status:", err);
+    res.status(500).json({ success: false, message: "Failed to update status" });
   }
 };
 
-/**
- * ✏️ Update user info
- */
-export const updateUser = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { name, email, phone } = req.body;
-
-    const result = await pool.query(
-      `UPDATE users 
-       SET name = $1, email = $2, phone = $3 
-       WHERE id = $4 RETURNING id, name, email, phone, role, created_at`,
-      [name, email, phone, id]
-    );
-
-    if (!result.rows.length)
-      return res.status(404).json({ success: false, message: "User not found" });
-
-    res.json({ success: true, message: "User updated successfully", user: result.rows[0] });
-  } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ success: false, message: "Failed to update user" });
-  }
-};
-
-/**
- * 🔑 Update password
- */
-export const updateUserPassword = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { oldPassword, newPassword } = req.body;
-
-    const userResult = await pool.query("SELECT password FROM users WHERE id = $1", [id]);
-    if (!userResult.rows.length)
-      return res.status(404).json({ success: false, message: "User not found" });
-
-    const isMatch = await bcrypt.compare(oldPassword, userResult.rows[0].password);
-    if (!isMatch)
-      return res.status(400).json({ success: false, message: "Old password is incorrect" });
-
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await pool.query("UPDATE users SET password = $1 WHERE id = $2", [hashed, id]);
-
-    res.json({ success: true, message: "Password updated successfully" });
-  } catch (error) {
-    console.error("Error updating password:", error);
-    res.status(500).json({ success: false, message: "Failed to update password" });
-  }
-};
-
-/**
- * 🗑️ Delete user (Admin use)
- */
+// DELETE /api/users/:id
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    await pool.query("DELETE FROM users WHERE id = $1", [id]);
-    res.json({ success: true, message: "User deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting user:", error);
+    await pool.query("DELETE FROM users WHERE id=$1", [id]);
+    res.json({ success: true, message: "User deleted" });
+  } catch (err) {
+    console.error("Error deleting user:", err);
     res.status(500).json({ success: false, message: "Failed to delete user" });
   }
 };

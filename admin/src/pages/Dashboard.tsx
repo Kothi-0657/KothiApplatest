@@ -125,7 +125,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 24,
     backgroundColor: "#0d0d0d",
     minHeight: "100vh",
-    color: "#fff",
+    color: "#302d2dff",
   },
   header: {
     fontSize: 24,

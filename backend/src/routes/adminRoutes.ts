@@ -1,13 +1,13 @@
 import express, { Request, Response } from "express";
 import pool from "../config/db";
-import { authenticateAdmin } from "../middleware/authMiddleware";
+import { authenticate } from "../middleware/auth";
 
 const router = express.Router();
 
 /**
  * ✅ Admin Dashboard – Summary Stats
  */
-router.get("/stats", authenticateAdmin, async (_req: Request, res: Response) => {
+router.get("/stats", authenticate, async (_req: Request, res: Response) => {
   try {
     const [users, vendors, bookings, services, payments, revenue] = await Promise.all([
       pool.query("SELECT COUNT(*) FROM users"),
@@ -38,7 +38,7 @@ router.get("/stats", authenticateAdmin, async (_req: Request, res: Response) => 
 /**
  * 👥 Fetch all users
  */
-router.get("/users", authenticateAdmin, async (_req: Request, res: Response) => {
+router.get("/users", authenticate, async (_req: Request, res: Response) => {
   try {
     const users = await pool.query(
       `SELECT id, name, email, phone, role, created_at 
@@ -55,7 +55,7 @@ router.get("/users", authenticateAdmin, async (_req: Request, res: Response) => 
 /**
  * 🧰 Fetch all vendors
  */
-router.get("/vendors", authenticateAdmin, async (_req: Request, res: Response) => {
+router.get("/vendors", authenticate, async (_req: Request, res: Response) => {
   try {
     const vendors = await pool.query(
       `SELECT id, name, email, phone, service_category, city, created_at 
@@ -72,7 +72,7 @@ router.get("/vendors", authenticateAdmin, async (_req: Request, res: Response) =
 /**
  * 🧾 Fetch all bookings
  */
-router.get("/bookings", authenticateAdmin, async (_req: Request, res: Response) => {
+router.get("/bookings", authenticate, async (_req: Request, res: Response) => {
   try {
     const bookings = await pool.query(`
       SELECT 
@@ -100,7 +100,7 @@ router.get("/bookings", authenticateAdmin, async (_req: Request, res: Response) 
 /**
  * 💳 Fetch all payments
  */
-router.get("/payments", authenticateAdmin, async (_req: Request, res: Response) => {
+router.get("/payments", authenticate, async (_req: Request, res: Response) => {
   try {
     const payments = await pool.query(`
       SELECT 
@@ -126,7 +126,7 @@ router.get("/payments", authenticateAdmin, async (_req: Request, res: Response) 
 /**
  * 🛠️ Fetch all services
  */
-router.get("/services", authenticateAdmin, async (_req: Request, res: Response) => {
+router.get("/services", authenticate, async (_req: Request, res: Response) => {
   try {
     const services = await pool.query(
       `SELECT id, name, description, price, category, image_url, created_at 
@@ -143,7 +143,7 @@ router.get("/services", authenticateAdmin, async (_req: Request, res: Response) 
 /**
  * ➕ Add new service
  */
-router.post("/services", authenticateAdmin, async (req: Request, res: Response) => {
+router.post("/services", authenticate, async (req: Request, res: Response) => {
   try {
     const { name, description, price, category, image_url } = req.body;
 
@@ -168,7 +168,7 @@ router.post("/services", authenticateAdmin, async (req: Request, res: Response) 
 /**
  * ✏️ Update existing service
  */
-router.put("/services/:id", authenticateAdmin, async (req: Request, res: Response) => {
+router.put("/services/:id", authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, description, price, category, image_url } = req.body;
@@ -194,7 +194,7 @@ router.put("/services/:id", authenticateAdmin, async (req: Request, res: Respons
 /**
  * ❌ Delete service
  */
-router.delete("/services/:id", authenticateAdmin, async (req: Request, res: Response) => {
+router.delete("/services/:id", authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -213,7 +213,7 @@ router.delete("/services/:id", authenticateAdmin, async (req: Request, res: Resp
 /**
  * 🔍 Search users / vendors / services by query param
  */
-router.get("/search", authenticateAdmin, async (req: Request, res: Response) => {
+router.get("/search", authenticate, async (req: Request, res: Response) => {
   try {
     const { type, q } = req.query;
 

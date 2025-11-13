@@ -1,67 +1,51 @@
-import { Request, Response } from 'express';
-}
+import { Request, Response } from "express";
+import pool from "../config/db";
+
+// GET /api/bookings
+export const getAllBookings = async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`
+      SELECT b.id, b.status, b.created_at,
+             u.name AS user_name, u.email AS user_email,
+             s.name AS service_name, s.category AS service_category,
+             v.name AS vendor_name
+      FROM bookings b
+      LEFT JOIN users u ON b.user_id = u.id
+      LEFT JOIN services s ON b.service_id = s.id
+      LEFT JOIN vendors v ON b.vendor_id = v.id
+      ORDER BY b.id DESC
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error("Error fetching bookings:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch bookings" });
+  }
 };
 
-// List bookings for user or admin
-export const listBookings = async (req: any, res: Response) => {
-try {
-const user = req.user; // if admin, allow all
-if (user?.role === 'admin') {
-const result = await pool.query('SELECT * FROM bookings ORDER BY id DESC');
-return res.json(result.rows);
-}
+// PATCH /api/bookings/:id/status
+export const updateBookingStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-const result = await pool.query('SELECT * FROM bookings WHERE user_id=$1 ORDER BY id DESC', [user.id]);
-res.json(result.rows);
-} catch (err) {
-console.error(err);
-res.status(500).json({ error: 'Failed to list bookings' });
-}
+    await pool.query("UPDATE bookings SET status=$1 WHERE id=$2", [status, id]);
+    res.json({ success: true, message: "Booking status updated" });
+  } catch (err) {
+    console.error("Error updating booking status:", err);
+    res.status(500).json({ success: false, message: "Failed to update status" });
+  }
 };
 
-export const getBooking = async (req: any, res: Response) => {
-try {
-const { id } = req.params;
-const result = await pool.query('SELECT * FROM bookings WHERE id=$1', [id]);
-if (!result.rows.length) return res.status(404).json({ error: 'Booking not found' });
-res.json(result.rows[0]);
-} catch (err) {
-console.error(err);
-res.status(500).json({ error: 'Failed to fetch booking' });
-}
-};
+// PATCH /api/bookings/:id/vendor
+export const assignVendor = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { vendor_id } = req.body;
 
-// Assign vendor (admin)
-export const assignVendor = async (req: any, res: Response) => {
-try {
-const { id } = req.params; // booking id
-const { vendor_id } = req.body;
-if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-
-const result = await pool.query('UPDATE bookings SET vendor_id=$1, status=$2 WHERE id=$3 RETURNING *', [vendor_id, 'assigned', id]);
-if (!result.rows.length) return res.status(404).json({ error: 'Booking not found' });
-
-res.json({ message: 'Vendor assigned', booking: result.rows[0] });
-} catch (err) {
-console.error(err);
-res.status(500).json({ error: 'Failed to assign vendor' });
-}
-};
-
-// Update booking status (vendor/admin)
-export const updateBookingStatus = async (req: any, res: Response) => {
-try {
-const { id } = req.params;
-const { status } = req.body;
-const allowed = ['requested', 'assigned', 'started', 'in_progress', 'completed', 'cancelled'];
-if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
-
-const result = await pool.query('UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *', [status, id]);
-if (!result.rows.length) return res.status(404).json({ error: 'Booking not found' });
-
-res.json({ message: 'Status updated', booking: result.rows[0] });
-} catch (err) {
-console.error(err);
-res.status(500).json({ error: 'Failed to update status' });
-}
+    await pool.query("UPDATE bookings SET vendor_id=$1 WHERE id=$2", [vendor_id, id]);
+    res.json({ success: true, message: "Vendor assigned to booking" });
+  } catch (err) {
+    console.error("Error assigning vendor:", err);
+    res.status(500).json({ success: false, message: "Failed to assign vendor" });
+  }
 };

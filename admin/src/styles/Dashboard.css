@@ -1,7 +1,7 @@
 /* Whole layout */
 .dashboard-layout {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: #5f6163;
 }
 
 /* Top navigation bar */
@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #ffffff;
+  background: #3c3a3a;
   border-bottom: 1px solid #eaeaea;
   padding: 0 24px;
   height: 64px;
@@ -76,7 +76,7 @@
 .dashboard-card {
   text-align: center;
   border-radius: 8px;
-  background: #fff;
+  background: #474545;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease;
 }
@@ -93,7 +93,7 @@
 
 /* Simple info placeholder cards */
 .info-card {
-  background: #fff;
+  background: #515050;
   padding: 40px;
   text-align: center;
   font-size: 16px;

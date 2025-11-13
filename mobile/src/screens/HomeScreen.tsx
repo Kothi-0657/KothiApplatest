@@ -14,11 +14,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Location from "expo-location";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // 🔹 ADDED
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: winW } = Dimensions.get("window");
 
-// CATEGORY LIST
+// ✅ Frontend tab categories (unchanged)
 const categories = [
   { id: "home", name: "Home Services", icon: "home-outline" },
   { id: "construction", name: "Constructions", icon: "business-outline" },
@@ -27,40 +27,53 @@ const categories = [
   { id: "inspection", name: "Inspections", icon: "search-outline" },
 ];
 
-// SERVICES DATA
-const allServices = {
-  home: [
-    { id: 1, name: "Electrical", icon: "flash-outline" },
-    { id: 2, name: "Plumbing", icon: "water-outline" },
-    { id: 3, name: "Painting", icon: "format-paint" },
-    { id: 4, name: "Cleaning", icon: "broom" },
-    { id: 5, name: "Pest Control", icon: "bug-outline" },
-  ],
-  construction: [
-    { id: 6, name: "Full House Build", icon: "home-modern" },
-    { id: 7, name: "Civil Work", icon: "tools" },
-    { id: 8, name: "False Ceiling", icon: "ceiling-light" },
-  ],
-  renovation: [
-    { id: 9, name: "Home Interiors", icon: "sofa" },
-    { id: 10, name: "Flooring", icon: "floor-lamp-outline" },
-    { id: 11, name: "Kitchen Upgrade", icon: "silverware-fork-knife" },
-  ],
-  movers: [
-    { id: 12, name: "Packers & Movers", icon: "truck-outline" },
-    { id: 13, name: "Local Shift", icon: "truck-delivery-outline" },
-  ],
-  inspection: [
-    { id: 14, name: "Home Inspection", icon: "magnify" },
-    { id: 15, name: "Pre-Sale Check", icon: "clipboard-check-outline" },
-  ],
-};
-
 export default function HomeScreen({ navigation }: any) {
   const [selectedTab, setSelectedTab] = useState("home");
   const [location, setLocation] = useState<string>("Fetching...");
+
+  const [allServices, setAllServices] = useState<{ [key: string]: any[] }>({});
+
+  // ✅ Fetch services from backend
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        // Replace with your local backend IP
+        const res = await fetch("http://192.168.29.182:4000/api/services");
+        const json = await res.json();
+
+        // ✅ Map backend category names to frontend tab IDs
+        const categoryMap: Record<string, string> = {
+          "Home Service": "home",
+          "Home Services": "home",
+          "Constructions": "construction",
+          "Construction": "construction",
+          "Home Renovations": "renovation",
+          "Renovations": "renovation",
+          "Packers and Movers": "movers",
+          "Movers": "movers",
+          "Home Inspections": "inspection",
+          "Inspections": "inspection",
+        };
+
+        const categorized: any = {};
+        json.data.forEach((srv: any) => {
+          const mappedKey = categoryMap[srv.category];
+          if (!mappedKey) return;
+          if (!categorized[mappedKey]) categorized[mappedKey] = [];
+          categorized[mappedKey].push(srv);
+        });
+
+        setAllServices(categorized);
+      } catch (e) {
+        console.error("Error fetching services:", e);
+      }
+    };
+    fetchServices();
+  }, []);
+
   const displayedServices = allServices[selectedTab] || [];
 
+  // ✅ Get user location
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -76,23 +89,20 @@ export default function HomeScreen({ navigation }: any) {
     })();
   }, []);
 
-  // 🔹 ADDED: Logout handler
+  // ✅ Logout handler
   const handleLogout = async () => {
-  try {
-    await AsyncStorage.multiRemove(["user", "token"]);
-    Alert.alert("Logout", "You have been logged out successfully.");
-
-    // ✅ Reset to Login at the root level
-    navigation.getParent()?.reset({
-      index: 0,
-      routes: [{ name: "Login" }],
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-    Alert.alert("Error", "Failed to log out. Please try again.");
-  }
-};
-
+    try {
+      await AsyncStorage.multiRemove(["user", "token"]);
+      Alert.alert("Logout", "You have been logged out successfully.");
+      navigation.getParent()?.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    }
+  };
 
   const openMapPicker = () => {
     navigation.navigate("MapPicker");
@@ -111,33 +121,49 @@ export default function HomeScreen({ navigation }: any) {
         {/* HEADER */}
         <View style={styles.header}>
           <View style={styles.logoRow}>
-            <Image source={require("../assets/logoa1.gif")} style={styles.logo} />
+            <Image
+              source={require("../assets/logoa1.gif")}
+              style={styles.logo}
+            />
             <Text style={styles.brand}>Kothi India</Text>
           </View>
 
-          {/* 🔹 Logout Button */}
+          {/* Logout Button */}
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Ionicons name="log-out-outline" size={22} color="#C6A664" />
           </TouchableOpacity>
         </View>
 
         {/* LOCATION */}
-        <TouchableOpacity style={styles.locationContainer} onPress={openMapPicker}>
+        <TouchableOpacity
+          style={styles.locationContainer}
+          onPress={openMapPicker}
+        >
           <Ionicons name="location-outline" size={20} color="#C6A664" />
           <Text numberOfLines={1} style={styles.locationText}>
             {location}
           </Text>
         </TouchableOpacity>
 
+        {/* TITLE */}
         <Text style={styles.heading}>Kothi India Home Solutions</Text>
-        <Text style={styles.subheading}>Curated All Services under one roof</Text>
+        <Text style={styles.subheading}>
+          Curated All Services under one roof
+        </Text>
 
         {/* TABS */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabContainer}
+        >
           {categories.map((cat) => {
             const active = cat.id === selectedTab;
             return (
-              <TouchableOpacity key={cat.id} onPress={() => setSelectedTab(cat.id)}>
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => setSelectedTab(cat.id)}
+              >
                 <BlurView
                   intensity={90}
                   tint="light"
@@ -147,7 +173,9 @@ export default function HomeScreen({ navigation }: any) {
                       backgroundColor: active
                         ? "rgba(255,255,255,0.85)"
                         : "rgba(255,255,255,0.5)",
-                      borderColor: active ? "#C6A664" : "rgba(255,255,255,0.3)",
+                      borderColor: active
+                        ? "#C6A664"
+                        : "rgba(255,255,255,0.3)",
                     },
                   ]}
                 >
@@ -157,7 +185,12 @@ export default function HomeScreen({ navigation }: any) {
                     color={active ? "#000" : "#C6A664"}
                     style={{ marginRight: 6 }}
                   />
-                  <Text style={[styles.tabText, { color: active ? "#000" : "#333" }]}>
+                  <Text
+                    style={[
+                      styles.tabText,
+                      { color: active ? "#000" : "#333" },
+                    ]}
+                  >
                     {cat.name}
                   </Text>
                 </BlurView>
@@ -166,12 +199,12 @@ export default function HomeScreen({ navigation }: any) {
           })}
         </ScrollView>
 
-        {/* SERVICES */}
+        {/* SERVICES GRID */}
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.serviceGrid}>
-            {displayedServices.map((srv) => (
+            {displayedServices.map((srv, index) => (
               <TouchableOpacity
-                key={srv.id}
+                key={index}
                 onPress={() => navigation.navigate("ServiceDetail", { srv })}
               >
                 <BlurView intensity={80} tint="light" style={styles.cardWrapper}>
@@ -183,12 +216,15 @@ export default function HomeScreen({ navigation }: any) {
                     style={styles.serviceCard}
                   >
                     <MaterialCommunityIcons
-                      name={srv.icon as any}
+                      name={srv.icon || "cog-outline"}
                       size={42}
                       color="#C6A664"
                       style={{ marginBottom: 10 }}
                     />
                     <Text style={styles.serviceText}>{srv.name}</Text>
+                    {srv.price ? (
+                      <Text style={styles.priceText}>₹{srv.price}</Text>
+                    ) : null}
                   </LinearGradient>
                 </BlurView>
               </TouchableOpacity>
@@ -200,7 +236,7 @@ export default function HomeScreen({ navigation }: any) {
   );
 }
 
-// 🔹 Styles
+// ✅ STYLES
 const styles = StyleSheet.create({
   bgImage: { flex: 1 },
   overlay: { flex: 1, paddingTop: 60, paddingHorizontal: 16 },
@@ -269,4 +305,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   serviceText: { color: "#333", fontWeight: "600", fontSize: 15 },
+  priceText: { color: "#C6A664", fontWeight: "600", fontSize: 13, marginTop: 4 },
 });

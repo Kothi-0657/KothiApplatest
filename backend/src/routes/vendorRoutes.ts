@@ -6,14 +6,14 @@ import {
   updateVendor,
   deleteVendor,
 } from "../controllers/vendorController";
-import { authenticateAdmin } from "../middleware/authMiddleware";
+import { authenticate } from "../middleware/auth";
 
 const router = express.Router();
 
-router.get("/", authenticateAdmin, getAllVendors);
-router.get("/:id", authenticateAdmin, getVendorById);
-router.post("/", authenticateAdmin, createVendor);
-router.put("/:id", authenticateAdmin, updateVendor);
-router.delete("/:id", authenticateAdmin, deleteVendor);
+router.get("/", authenticate, getAllVendors);
+router.get("/:id", authenticate, getVendorById);
+router.post("/", authenticate, createVendor);
+router.put("/:id", authenticate, updateVendor);
+router.delete("/:id", authenticate, deleteVendor);
 
 export default router;

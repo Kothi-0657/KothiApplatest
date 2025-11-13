@@ -11,15 +11,18 @@ const LoginPage: React.FC = () => {
   const handleLogin = async () => {
     console.log("Login button clicked");
     try {
-      const res = await axios.post("http://localhost:4000/api/auth/login", {
-        email,
-        password,
-      });
+     const res = await axios.post("http://localhost:4000/api/admin/auth/login", {
+  email,
+  password,
+});
 
-      console.log("Response:", res.data);
-      localStorage.setItem("token", res.data.token);
-      message.success("Welcome back, Admin!");
-      navigate("/dashboard");
+      if (res.data?.success) {
+        localStorage.setItem("admin_token", res.data.token);
+        message.success("Welcome back, Admin!");
+        navigate("/dashboard");
+      } else {
+        message.error(res.data?.message || "Login failed");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
       message.error("Invalid credentials or server error");

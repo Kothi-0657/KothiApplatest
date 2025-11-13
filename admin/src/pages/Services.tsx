@@ -1,176 +1,288 @@
 import React, { useEffect, useState } from "react";
-import adminAPI from "../api/adminAPI";
-import DataTable from "../components/DataTable";
+import axios from "axios";
 
-type Service = {
-  id: number;
+interface Service {
+  id: string;
+  category: string;
   name: string;
-  description?: string;
   price: number;
-  category?: string;
-  city?: string;
-  status: boolean;
+  icon?: string;
+}
+
+const categories = [
+  "Home Service",
+  "Home Renovations",
+  "Constructions",
+  "Packers and Movers",
+  "Home Inspections",
+];
+
+// ---------- Styles ----------
+const containerStyle: React.CSSProperties = {
+  padding: 20,
+  minHeight: "100vh",
+  background: "linear-gradient(135deg, #000000, #1a1a1a)",
+  color: "#fff",
 };
 
-export default function Services() {
+const cardStyle: React.CSSProperties = {
+  background: "#ffffff",
+  color: "#000",
+  borderRadius: 10,
+  padding: 20,
+  boxShadow: "0 6px 18px rgba(16,24,40,0.06)",
+  border: "1px solid #e6e6e6",
+};
+
+const inputStyle: React.CSSProperties = {
+  border: "1px solid #555",
+  background: "#fff",
+  color: "#000",
+  padding: "8px 10px",
+  borderRadius: 8,
+  outline: "none",
+};
+
+const primaryBtnStyle: React.CSSProperties = {
+  backgroundColor: "#ffd700",
+  color: "#000",
+  padding: "9px 14px",
+  borderRadius: 8,
+  border: "none",
+  cursor: "pointer",
+  fontWeight: 600,
+};
+
+const tableWrapperStyle: React.CSSProperties = {
+  marginTop: 18,
+  background: "#ffffff",
+  padding: 14,
+  borderRadius: 10,
+  overflowX: "auto",
+  border: "1px solid #e6e6e6",
+};
+
+const tableStyle: React.CSSProperties = {
+  width: "100%",
+  borderCollapse: "collapse",
+  color: "#000",
+};
+
+const headerRowStyle: React.CSSProperties = {
+  backgroundColor: "#333",
+  color: "#ffd700",
+};
+
+const cellStyle: React.CSSProperties = {
+  padding: "12px 14px",
+  textAlign: "left",
+  borderBottom: "1px solid #e6e6e6",
+  color: "#000",
+};
+
+const actionBtnStyle: React.CSSProperties = {
+  padding: "6px 10px",
+  borderRadius: 6,
+  border: "none",
+  cursor: "pointer",
+  color: "#fff",
+};
+
+// ---------- Component ----------
+export default function AdminServices() {
   const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [newService, setNewService] = useState({ name: "", price: "", city: "", category: "" });
-  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ category: "", name: "", price: "" });
+  const [editing, setEditing] = useState<Service | null>(null);
+
+  // ---------- Fetch Services ----------
+  const fetchServices = async () => {
+    try {
+      const res = await axios.get("http://localhost:4000/api/services");
+      setServices(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
 
   useEffect(() => {
     fetchServices();
   }, []);
 
-  const fetchServices = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await adminAPI.get("/services");
-      if (res.data?.services) setServices(res.data.services);
-      else setServices(res.data);
-    } catch (err) {
-      console.error("❌ Fetch services error", err);
-      setError("Failed to fetch services. Please check your backend connection.");
-    } finally {
-      setLoading(false);
-    }
+  // ---------- Form Handlers ----------
+  const handleChange = (key: string, value: string) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const resetForm = () => {
+    setForm({ category: "", name: "", price: "" });
+    setEditing(null);
   };
 
+  // ---------- CRUD Actions ----------
   const handleAdd = async () => {
-    if (!newService.name || !newService.price) {
-      alert("Please fill in name and price");
+    if (!form.category || !form.name || !form.price) {
+      alert("All fields are required");
       return;
     }
     try {
-      setLoading(true);
-      await adminAPI.post("/services", {
-        name: newService.name,
-        price: Number(newService.price),
-        city: newService.city || null,
-        category: newService.category || null,
+      await axios.post("http://localhost:4000/api/services", {
+        category: form.category,
+        name: form.name,
+        price: Number(form.price),
       });
-      setShowForm(false);
-      setNewService({ name: "", price: "", city: "", category: "" });
-      await fetchServices();
-    } catch (err) {
-      console.error("❌ Add service error", err);
-      alert("Error adding service.");
-    } finally {
-      setLoading(false);
+      resetForm();
+      fetchServices();
+    } catch (error) {
+      console.error("Error adding service:", error);
+      alert("Failed to add service");
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this service?")) return;
+  const handleEdit = async () => {
+    if (!editing) return;
+    if (!form.category || !form.name || !form.price) {
+      alert("All fields are required");
+      return;
+    }
     try {
-      await adminAPI.delete(`/services/${id}`);
-      await fetchServices();
-    } catch (err) {
-      console.error("❌ Delete service error", err);
-      alert("Failed to delete service.");
+      await axios.put(`http://localhost:4000/api/services/${editing.id}`, {
+        category: form.category,
+        name: form.name,
+        price: Number(form.price),
+      });
+      resetForm();
+      fetchServices();
+    } catch (error) {
+      console.error("Error updating service:", error);
+      alert("Failed to update service");
     }
   };
 
-  const handlePriceUpdate = async (s: Service) => {
-    const newPrice = prompt(`Update price for ${s.name}`, String(s.price));
-    if (!newPrice) return;
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this service?")) return;
     try {
-      await adminAPI.put(`/services/${s.id}`, { ...s, price: Number(newPrice) });
-      await fetchServices();
-    } catch (err) {
-      console.error("❌ Update price error", err);
+      await axios.delete(`http://localhost:4000/api/services/${id}`);
+      fetchServices();
+    } catch (error) {
+      console.error("Error deleting service:", error);
+      alert("Failed to delete service");
     }
   };
 
-  const columns = [
-    { key: "name", label: "Service" },
-    { key: "price", label: "Price", render: (r: Service) => `₹${r.price}` },
-    { key: "city", label: "City" },
-    { key: "category", label: "Category" },
-    { key: "status", label: "Status", render: (r: Service) => (r.status ? "✅ Active" : "❌ Inactive") },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (r: Service) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => handlePriceUpdate(r)}>Edit Price</button>
-          <button onClick={() => handleDelete(r.id)}>Delete</button>
-        </div>
-      ),
-    },
-  ];
+  const startEditing = (service: Service) => {
+    setEditing(service);
+    setForm({
+      category: service.category,
+      name: service.name,
+      price: String(service.price),
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
+  // ---------- UI ----------
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={{ color: "#d4af37" }}>🧰 Manage Services</h2>
-        <button style={styles.addButton} onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Close Form" : "Add Service"}
-        </button>
-      </div>
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <h2 style={{ color: "#1f2937", margin: 0, marginBottom: 12, fontSize: 20 }}>
+          Manage Services
+        </h2>
 
-      {showForm && (
-        <div style={styles.form}>
+        {/* Form Section */}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <select
+            value={form.category}
+            onChange={(e) => handleChange("category", e.target.value)}
+            style={{ ...inputStyle, minWidth: 180 }}
+          >
+            <option value="">Select Category</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+
           <input
-            type="text"
-            placeholder="Service Name"
-            value={newService.name}
-            onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+            placeholder="Line Item"
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            style={{ ...inputStyle, flex: 1, minWidth: 220 }}
           />
+
           <input
-            type="number"
             placeholder="Price (₹)"
-            value={newService.price}
-            onChange={(e) => setNewService({ ...newService, price: e.target.value })}
+            value={form.price}
+            onChange={(e) => handleChange("price", e.target.value)}
+            style={{ ...inputStyle, width: 120 }}
           />
-          <input
-            type="text"
-            placeholder="City (optional)"
-            value={newService.city}
-            onChange={(e) => setNewService({ ...newService, city: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Category (optional)"
-            value={newService.category}
-            onChange={(e) => setNewService({ ...newService, category: e.target.value })}
-          />
-          <button onClick={handleAdd}>Save Service</button>
-        </div>
-      )}
 
-      <div style={{ marginTop: 16 }}>
-        {loading && <div>Loading services...</div>}
-        {error && <div style={{ color: "red" }}>{error}</div>}
-        {!loading && !error && (
-          <DataTable columns={columns as any} data={services as any} />
-        )}
+          {!editing ? (
+            <button onClick={handleAdd} style={primaryBtnStyle}>
+              Add
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleEdit}
+                style={{ ...primaryBtnStyle, background: "#10b981" }}
+              >
+                Save
+              </button>
+              <button
+                onClick={resetForm}
+                style={{ ...primaryBtnStyle, background: "#6b7280", color: "#fff" }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Table Section */}
+        <div style={tableWrapperStyle}>
+          <table style={tableStyle}>
+            <thead>
+              <tr style={headerRowStyle}>
+                <th style={cellStyle}>Category</th>
+                <th style={cellStyle}>Line Item</th>
+                <th style={cellStyle}>Price (₹)</th>
+                <th style={{ ...cellStyle, textAlign: "center" }}>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {services.length === 0 ? (
+                <tr>
+                  <td colSpan={4} style={{ padding: 20, color: "#6b7280", textAlign: "center" }}>
+                    No services found.
+                  </td>
+                </tr>
+              ) : (
+                services.map((srv) => (
+                  <tr key={srv.id} style={{ borderBottom: "1px solid #e6e6e6" }}>
+                    <td style={cellStyle}>{srv.category}</td>
+                    <td style={cellStyle}>{srv.name}</td>
+                    <td style={cellStyle}>{srv.price}</td>
+                    <td style={{ ...cellStyle, textAlign: "center" }}>
+                      <button
+                        onClick={() => startEditing(srv)}
+                        style={{ ...actionBtnStyle, background: "#007bff", marginRight: 8 }}
+                      >
+                        Modify
+                      </button>
+                      <button
+                        onClick={() => handleDelete(srv.id)}
+                        style={{ ...actionBtnStyle, background: "#dc3545" }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
-
-/* 🎨 Styles */
-const styles: Record<string, React.CSSProperties> = {
-  container: { padding: 24, color: "#fff" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center" },
-  addButton: {
-    background: "#d4af37",
-    color: "#000",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  form: {
-    display: "flex",
-    gap: 8,
-    background: "#1a1a1a",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 12,
-  },
-};
