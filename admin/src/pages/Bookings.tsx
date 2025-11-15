@@ -43,7 +43,7 @@ const Bookings: React.FC = () => {
   };
 
   const columns = [
-    { title: "Customer", dataIndex: ["user", "name"], key: "customer" },
+    { title: "Customer", dataIndex: ["customers", "name"], key: "customer" },
     { title: "Service", dataIndex: ["service", "title"], key: "service" },
     { title: "Date", dataIndex: "date", key: "date" },
     { title: "Amount", dataIndex: "amount", key: "amount" },

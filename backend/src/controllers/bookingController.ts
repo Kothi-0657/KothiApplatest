@@ -10,7 +10,7 @@ export const getAllBookings = async (_req: Request, res: Response) => {
              s.name AS service_name, s.category AS service_category,
              v.name AS vendor_name
       FROM bookings b
-      LEFT JOIN users u ON b.user_id = u.id
+      LEFT JOIN customers u ON b.customers_id = u.id
       LEFT JOIN services s ON b.service_id = s.id
       LEFT JOIN vendors v ON b.vendor_id = v.id
       ORDER BY b.id DESC

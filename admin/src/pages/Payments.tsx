@@ -56,7 +56,7 @@ const Payments: React.FC = () => {
   };
 
   const columns = [
-    { title: "User", dataIndex: ["userId", "name"], key: "user" },
+    { title: "Customers", dataIndex: ["userId", "name"], key: "customers" },
     { title: "Email", dataIndex: ["userId", "email"], key: "email" },
     { title: "Amount", dataIndex: "amount", key: "amount" },
     {

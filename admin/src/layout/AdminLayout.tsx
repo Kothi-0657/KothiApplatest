@@ -5,7 +5,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 const menu = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/services", label: "Services" },
-  { to: "/users", label: "Users" },
+  { to: "/customers", label: "customers" },
   { to: "/payments", label: "Payments" },
   { to: "/vendors", label: "Vendors" },
   { to: "/bookings", label: "Bookings" },

@@ -1,3 +1,5 @@
+// src/routes/adminRoutes.ts
+
 import express, { Request, Response } from "express";
 import pool from "../config/db";
 import { authenticate } from "../middleware/auth";
@@ -5,23 +7,23 @@ import { authenticate } from "../middleware/auth";
 const router = express.Router();
 
 /**
- * ✅ Admin Dashboard – Summary Stats
+ * 📊 Admin Dashboard Stats
  */
 router.get("/stats", authenticate, async (_req: Request, res: Response) => {
   try {
-    const [users, vendors, bookings, services, payments, revenue] = await Promise.all([
-      pool.query("SELECT COUNT(*) FROM users"),
+    const [customers, vendors, bookings, services, payments, revenue] = await Promise.all([
+      pool.query("SELECT COUNT(*) FROM customers"),
       pool.query("SELECT COUNT(*) FROM vendors"),
       pool.query("SELECT COUNT(*) FROM bookings"),
       pool.query("SELECT COUNT(*) FROM services"),
       pool.query("SELECT COUNT(*) FROM payments"),
-      pool.query("SELECT COALESCE(SUM(amount), 0) AS total FROM payments WHERE status='success'"),
+      pool.query("SELECT COALESCE(SUM(amount), 0) AS total FROM payments WHERE status='success'")
     ]);
 
     res.json({
       success: true,
       stats: {
-        totalUsers: Number(users.rows[0].count),
+        totalCustomers: Number(customers.rows[0].count),
         totalVendors: Number(vendors.rows[0].count),
         totalBookings: Number(bookings.rows[0].count),
         totalServices: Number(services.rows[0].count),
@@ -36,32 +38,34 @@ router.get("/stats", authenticate, async (_req: Request, res: Response) => {
 });
 
 /**
- * 👥 Fetch all users
+ * 👥 Fetch All Customers
  */
-router.get("/users", authenticate, async (_req: Request, res: Response) => {
+router.get("/customers", authenticate, async (_req: Request, res: Response) => {
   try {
-    const users = await pool.query(
-      `SELECT id, name, email, phone, role, created_at 
-       FROM users 
-       ORDER BY created_at DESC`
-    );
-    res.json({ success: true, users: users.rows });
+    const customers = await pool.query(`
+      SELECT id, full_name AS name, email, phone, status, created_at
+      FROM customers
+      ORDER BY created_at DESC
+    `);
+
+    res.json({ success: true, customers: customers.rows });
   } catch (err) {
-    console.error("Error fetching users:", err);
-    res.status(500).json({ success: false, message: "Failed to fetch users" });
+    console.error("Error fetching customers:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch Cusotmers" });
   }
 });
 
 /**
- * 🧰 Fetch all vendors
+ * 🧰 Fetch All Vendors
  */
 router.get("/vendors", authenticate, async (_req: Request, res: Response) => {
   try {
-    const vendors = await pool.query(
-      `SELECT id, name, email, phone, service_category, city, created_at 
-       FROM vendors 
-       ORDER BY created_at DESC`
-    );
+    const vendors = await pool.query(`
+      SELECT id, name, email, phone, service_category, city, created_at
+      FROM vendors
+      ORDER BY created_at DESC
+    `);
+
     res.json({ success: true, vendors: vendors.rows });
   } catch (err) {
     console.error("Error fetching vendors:", err);
@@ -70,26 +74,27 @@ router.get("/vendors", authenticate, async (_req: Request, res: Response) => {
 });
 
 /**
- * 🧾 Fetch all bookings
+ * 📦 Fetch All Bookings
  */
 router.get("/bookings", authenticate, async (_req: Request, res: Response) => {
   try {
     const bookings = await pool.query(`
       SELECT 
-        b.id, 
-        u.name AS user_name, 
+        b.id,
+        c.full_name AS customer_name,
         v.name AS vendor_name,
-        s.name AS service_name, 
-        b.date, 
-        b.address, 
-        b.status, 
-        b.created_at 
+        s.name AS service_name,
+        b.scheduled_at,
+        b.address,
+        b.status,
+        b.created_at
       FROM bookings b
-      LEFT JOIN users u ON b.user_id = u.id
+      LEFT JOIN customers c ON b.customer_id = c.id
       LEFT JOIN vendors v ON b.vendor_id = v.id
       LEFT JOIN services s ON b.service_id = s.id
       ORDER BY b.created_at DESC
     `);
+
     res.json({ success: true, bookings: bookings.rows });
   } catch (err) {
     console.error("Error fetching bookings:", err);
@@ -98,24 +103,26 @@ router.get("/bookings", authenticate, async (_req: Request, res: Response) => {
 });
 
 /**
- * 💳 Fetch all payments
+ * 💳 Fetch All Payments
  */
 router.get("/payments", authenticate, async (_req: Request, res: Response) => {
   try {
     const payments = await pool.query(`
       SELECT 
-        p.id, 
-        p.amount, 
-        p.status, 
+        p.id,
+        p.amount,
+        p.status,
+        p.payment_method,
         p.created_at,
-        u.name AS user_name,
+        c.full_name AS customer_name,
         b.id AS booking_id,
-        b.date AS booking_date
+        b.scheduled_at AS booking_date
       FROM payments p
-      LEFT JOIN users u ON p.user_id = u.id
-      LEFT JOIN bookings b ON p.booking_id = b.id
+      LEFT JOIN customers c ON p.payer_id = c.id
+      LEFT JOIN bookings b ON p.related_booking = b.id
       ORDER BY p.created_at DESC
     `);
+
     res.json({ success: true, payments: payments.rows });
   } catch (err) {
     console.error("Error fetching payments:", err);
@@ -124,15 +131,22 @@ router.get("/payments", authenticate, async (_req: Request, res: Response) => {
 });
 
 /**
- * 🛠️ Fetch all services
+ * 🛠️ Fetch All Services
  */
 router.get("/services", authenticate, async (_req: Request, res: Response) => {
   try {
-    const services = await pool.query(
-      `SELECT id, name, description, price, category, image_url, created_at 
-       FROM services 
-       ORDER BY created_at DESC`
-    );
+    const services = await pool.query(`
+      SELECT 
+        id, 
+        name, 
+        description,
+        category,
+        image_url,
+        created_at
+      FROM services
+      ORDER BY created_at DESC
+    `);
+
     res.json({ success: true, services: services.rows });
   } catch (err) {
     console.error("Error fetching services:", err);
@@ -141,21 +155,20 @@ router.get("/services", authenticate, async (_req: Request, res: Response) => {
 });
 
 /**
- * ➕ Add new service
+ * ➕ Add Service
  */
 router.post("/services", authenticate, async (req: Request, res: Response) => {
   try {
-    const { name, description, price, category, image_url } = req.body;
+    const { name, description, category, image_url } = req.body;
 
-    if (!name || !price) {
-      return res.status(400).json({ success: false, message: "Name and price are required" });
-    }
+    if (!name)
+      return res.status(400).json({ success: false, message: "Service name is required" });
 
     const result = await pool.query(
-      `INSERT INTO services (name, description, price, category, image_url, created_at)
-       VALUES ($1, $2, $3, $4, $5, NOW())
+      `INSERT INTO services (name, description, category, image_url, created_at)
+       VALUES ($1, $2, $3, $4, NOW())
        RETURNING *`,
-      [name, description, price, category, image_url]
+      [name, description, category, image_url]
     );
 
     res.json({ success: true, message: "Service added successfully", service: result.rows[0] });
@@ -166,19 +179,19 @@ router.post("/services", authenticate, async (req: Request, res: Response) => {
 });
 
 /**
- * ✏️ Update existing service
+ * ✏️ Update Service
  */
 router.put("/services/:id", authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, description, price, category, image_url } = req.body;
+    const { name, description, category, image_url } = req.body;
 
     const result = await pool.query(
       `UPDATE services 
-       SET name=$1, description=$2, price=$3, category=$4, image_url=$5, updated_at=NOW()
-       WHERE id=$6
+       SET name=$1, description=$2, category=$3, image_url=$4, updated_at=NOW()
+       WHERE id=$5
        RETURNING *`,
-      [name, description, price, category, image_url, id]
+      [name, description, category, image_url, id]
     );
 
     if (result.rowCount === 0)
@@ -192,7 +205,7 @@ router.put("/services/:id", authenticate, async (req: Request, res: Response) =>
 });
 
 /**
- * ❌ Delete service
+ * ❌ Delete Service
  */
 router.delete("/services/:id", authenticate, async (req: Request, res: Response) => {
   try {
@@ -211,27 +224,36 @@ router.delete("/services/:id", authenticate, async (req: Request, res: Response)
 });
 
 /**
- * 🔍 Search users / vendors / services by query param
+ * 🔍 Search Feature
  */
 router.get("/search", authenticate, async (req: Request, res: Response) => {
   try {
     const { type, q } = req.query;
 
-    if (!type || !q) {
+    if (!type || !q)
       return res.status(400).json({ success: false, message: "Missing search parameters" });
-    }
 
     let query = "";
+
     switch (type) {
-      case "users":
-        query = `SELECT id, name, email, phone FROM users WHERE name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1`;
+      case "customers":
+        query = `SELECT id, full_name AS name, email, phone 
+                 FROM customers 
+                 WHERE full_name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1`;
         break;
+
       case "vendors":
-        query = `SELECT id, name, email, phone, city FROM vendors WHERE name ILIKE $1 OR city ILIKE $1`;
+        query = `SELECT id, name, email, phone, city 
+                 FROM vendors 
+                 WHERE name ILIKE $1 OR city ILIKE $1`;
         break;
+
       case "services":
-        query = `SELECT id, name, description, price FROM services WHERE name ILIKE $1 OR description ILIKE $1`;
+        query = `SELECT id, name, description 
+                 FROM services 
+                 WHERE name ILIKE $1 OR description ILIKE $1`;
         break;
+
       default:
         return res.status(400).json({ success: false, message: "Invalid search type" });
     }
@@ -239,7 +261,7 @@ router.get("/search", authenticate, async (req: Request, res: Response) => {
     const result = await pool.query(query, [`%${q}%`]);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    console.error("Error searching:", err);
+    console.error("Search error:", err);
     res.status(500).json({ success: false, message: "Search failed" });
   }
 });

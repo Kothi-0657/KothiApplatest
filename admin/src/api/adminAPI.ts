@@ -1,21 +1,21 @@
 // src/api/adminAPI.ts
 import axios from "axios";
 
-// ✅ Use Vite environment or fallback to local IP
-const ADMIN_BASE =
-  import.meta.env.VITE_ADMIN_API || "http://192.168.29.182:4000/api/admin";
+// Base URL
+const API_URL =
+  import.meta.env.VITE_ADMIN_API || "http://localhost:4000";
 
+// Axios instance
 const adminAPI = axios.create({
-  baseURL: ADMIN_BASE,
+  baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 15000,
 });
 
-// ✅ Auto-attach admin token from localStorage
+// Attach token
 adminAPI.interceptors.request.use(
-  async (config) => {
+  (config) => {
     const token = localStorage.getItem("admin_token");
-    if (token && config.headers) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -24,3 +24,41 @@ adminAPI.interceptors.request.use(
 );
 
 export default adminAPI;
+
+// -------------------------------- customers --------------------------------
+export const fetchCustomers = async () => {
+  const res = await adminAPI.get("/api/customers");
+  return res.data.customers || [];
+};
+
+export const updateCustomersStatus = async (id: string, status: string) => {
+  return adminAPI.put(`/api/customers/${id}/status`, { status });
+};
+
+export const deleteCustomers = async (id: string) => {
+  return adminAPI.delete(`/api/customers/${id}`);
+};
+
+// -------------------------------- BOOKINGS --------------------------------
+export const fetchBookings = async () => {
+  const res = await adminAPI.get("/api/bookings");
+  return res.data.bookings || [];
+};
+
+export const updateBooking = async (id: string, status: string) => {
+  return adminAPI.put(`/api/bookings/${id}/status`, { status });
+};
+
+// -------------------------------- PAYMENTS --------------------------------
+export const fetchPayments = async () => {
+  const res = await adminAPI.get("/api/payments");
+  return res.data.payments || [];
+};
+
+export const updatePaymentStatus = async (id: string, status: string) => {
+  return adminAPI.put(`/api/payments/${id}/status`, { status });
+};
+
+export const verifyPayment = async (id: string) => {
+  return adminAPI.put(`/api/payments/${id}/verify`);
+};

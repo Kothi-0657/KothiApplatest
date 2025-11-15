@@ -1,15 +1,20 @@
 import express from "express";
 import {
+  createPayment,
   getAllPayments,
+  getPaymentsByUser,
+  getPaymentByBooking,
   updatePaymentStatus,
-  downloadPaymentReport,
+  deletePayment,
 } from "../controllers/paymentController";
-import { verifyAdminToken } from "../middleware/auth";
 
 const router = express.Router();
 
-router.get("/payments", verifyAdminToken, getAllPayments);
-router.patch("/payments/:id/status", verifyAdminToken, updatePaymentStatus);
-router.get("/payments/report", verifyAdminToken, downloadPaymentReport);
+router.post("/", createPayment);
+router.get("/", getAllPayments);
+router.get("/user/:user_id", getPaymentsByUser);
+router.get("/booking/:booking_id", getPaymentByBooking);
+router.put("/:id", updatePaymentStatus);
+router.delete("/:id", deletePayment);
 
 export default router;

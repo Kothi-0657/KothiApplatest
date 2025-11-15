@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "./layout/AdminLayout";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
-import Users from "./pages/Users";
+import Customers from "./pages/customers";
 import Payments from "./pages/Payments";
 import Vendors from "./pages/vendors";
 import Bookings from "./pages/Bookings";
@@ -25,7 +25,7 @@ export default function App() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="services" element={<Services />} />
-            <Route path="users" element={<Users />} />
+            <Route path="customers" element={<Customers />} />
             <Route path="payments" element={<Payments />} />
             <Route path="vendors" element={<Vendors />} />
             <Route path="bookings" element={<Bookings />} />

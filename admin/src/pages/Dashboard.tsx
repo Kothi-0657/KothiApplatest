@@ -13,7 +13,7 @@ import {
 } from "recharts";
 
 type DashboardData = {
-  totalUsers: number;
+  totalCustomers: number;
   totalBookings: number;
   totalRevenue: number;
   graphData: { day: string; revenue: number }[];
@@ -65,7 +65,7 @@ export default function Dashboard() {
       ) : (
         <>
           <div style={styles.statsGrid}>
-            <StatCard title="Total Users" value={stats?.totalUsers ?? "—"} />
+            <StatCard title="Total Customers" value={stats?.totalCustomers ?? "—"} />
             <StatCard title="Total Bookings" value={stats?.totalBookings ?? "—"} />
             <StatCard
               title="Total Revenue"

@@ -9,21 +9,21 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userResult = await pool.query("SELECT * FROM admin_users WHERE email = $1", [email]);
+    const customersResult = await pool.query("SELECT * FROM cusotmers WHERE email = $1", [email]);
 
-    if (userResult.rows.length === 0) {
+    if (customersResult.rows.length === 0) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
-    const user = userResult.rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
+    const customers = customersResult.rows[0];
+    const isMatch = await bcrypt.compare(password, customers.password);
 
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: customers.id, role: customers.role },
       process.env.JWT_SECRET || "secretkey",
       { expiresIn: "7d" }
     );
@@ -32,10 +32,10 @@ router.post("/login", async (req, res) => {
       success: true,
       token,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        id: customers.id,
+        name: customers.name,
+        email: customers.email,
+        role: customers.role,
       },
     });
   } catch (error) {
