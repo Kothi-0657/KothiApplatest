@@ -1,4 +1,4 @@
-// backend/src/controllers/serviceController.ts
+//backend/src/controllers/serviceController.ts
 import { Request, Response } from "express";
 import pool from "../config/db";
 

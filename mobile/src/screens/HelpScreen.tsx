@@ -1,96 +1,170 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Linking, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+  ScrollView,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuth } from "../context/AuthContext";
 
 export default function HelpScreen() {
-  const contactNow = (method: "call" | "whatsapp" | "mail", topic: string) => {
+  const { user } = useAuth();
+
+  const contactNow = (method: "call" | "whatsapp" | "mail") => {
+    if (!user) {
+      alert("Please login to contact support.");
+      return;
+    }
+
     if (method === "call") Linking.openURL("tel:+919972225551");
-    if (method === "whatsapp") Linking.openURL("https://wa.me/919972225551");
-    if (method === "mail") Linking.openURL(`mailto:service@kothiindia.com?subject=Help regarding ${topic}`);
+
+    if (method === "whatsapp")
+      Linking.openURL("https://wa.me/919972225551?text=Hello%20Kothi%20India");
+
+    if (method === "mail")
+      Linking.openURL("mailto:service@kothiindia.com?subject=Support Request");
   };
 
   return (
-    <LinearGradient colors={["#000000", "#1a1a1a"]} style={styles.container}>
+    <LinearGradient
+      colors={["#000000", "#111111", "#1a1a1a"]}
+      style={styles.container}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.heading}>Need Help?</Text>
+        <Text style={styles.heading}>We're Here to Help</Text>
 
-        <HelpSection title="Help in Bookings" topic="Booking Support" contactNow={contactNow} />
-        <HelpSection title="Help in Partnership" topic="Partnership Enquiry" contactNow={contactNow} />
+        {!user && (
+          <View style={styles.warningBox}>
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={24}
+              color="#ffcc00"
+            />
+            <Text style={styles.warningText}>
+              Login required to contact support.
+            </Text>
+          </View>
+        )}
 
-        <Text style={styles.email}>
-          For general enquiries: {"\n"}service@kothiindia.com
+        <HelpOption
+          title="Call Support"
+          subtitle="Talk to our customer support team"
+          icon="call-outline"
+          onPress={() => contactNow("call")}
+        />
+
+        <HelpOption
+          title="WhatsApp Support"
+          subtitle="Chat instantly with our support team"
+          icon="logo-whatsapp"
+          onPress={() => contactNow("whatsapp")}
+        />
+
+        <HelpOption
+          title="Email Support"
+          subtitle="Drop us a detailed message"
+          icon="mail-outline"
+          onPress={() => contactNow("mail")}
+        />
+
+        <Text style={styles.footer}>
+          Kothi India Home Solutions {"\n"}
+          © 2025 All Rights Reserved
         </Text>
       </ScrollView>
     </LinearGradient>
   );
 }
 
-const HelpSection = ({
+const HelpOption = ({
   title,
-  topic,
-  contactNow,
+  subtitle,
+  icon,
+  onPress,
 }: {
   title: string;
-  topic: string;
-  contactNow: any;
+  subtitle: string;
+  icon: any;
+  onPress: () => void;
 }) => (
-  <View style={styles.section}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <View style={styles.buttons}>
-      <TouchableOpacity style={styles.btn} onPress={() => contactNow("call", topic)}>
-        <Ionicons name="call-outline" size={20} color="#000" />
-        <Text style={styles.btnText}>Call</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.btn} onPress={() => contactNow("whatsapp", topic)}>
-        <Ionicons name="logo-whatsapp" size={20} color="#000" />
-        <Text style={styles.btnText}>WhatsApp</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.btn} onPress={() => contactNow("mail", topic)}>
-        <Ionicons name="mail-outline" size={20} color="#000" />
-        <Text style={styles.btnText}>Mail</Text>
-      </TouchableOpacity>
+  <TouchableOpacity onPress={onPress} style={styles.optionCard}>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <Ionicons name={icon} size={26} color="#c6a664" style={{ marginRight: 14 }} />
+      <View>
+        <Text style={styles.optionTitle}>{title}</Text>
+        <Text style={styles.optionSubtitle}>{subtitle}</Text>
+      </View>
     </View>
-  </View>
+    <Ionicons name="chevron-forward" size={22} color="#777" />
+  </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 70 },
+  container: { flex: 1, paddingTop: 70, paddingHorizontal: 20 },
+
   heading: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
     color: "#f5d77b",
     textAlign: "center",
-    marginBottom: 25,
+    marginBottom: 30,
+    letterSpacing: 0.5,
   },
-  section: {
-    backgroundColor: "#121212",
-    padding: 20,
-    borderRadius: 16,
+
+  warningBox: {
+    backgroundColor: "rgba(255, 204, 0, 0.12)",
+    borderColor: "#ffcc00",
+    borderWidth: 1,
+    padding: 12,
+    flexDirection: "row",
+    borderRadius: 10,
+    alignItems: "center",
     marginBottom: 20,
+  },
+  warningText: {
+    marginLeft: 8,
+    color: "#ffcc00",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+  optionCard: {
+    backgroundColor: "#141414",
+    padding: 18,
+    borderRadius: 14,
+    marginBottom: 18,
     borderWidth: 1,
     borderColor: "#2a2a2a",
-  },
-  sectionTitle: { color: "#fff", fontSize: 17, fontWeight: "600", marginBottom: 15 },
-  buttons: { flexDirection: "row", justifyContent: "space-between" },
-  btn: {
-    backgroundColor: "#f5d77b",
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    flex: 1,
-    marginHorizontal: 5,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  btnText: { marginLeft: 6, fontWeight: "600", color: "#000" },
-  email: {
-    textAlign: "center",
+
+  optionTitle: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "600",
+  },
+
+  optionSubtitle: {
     color: "#aaa",
-    marginTop: 10,
     fontSize: 13,
+    marginTop: 2,
+  },
+
+  footer: {
+    textAlign: "center",
+    color: "#555",
+    marginTop: 20,
+    fontSize: 12,
   },
 });

@@ -1,19 +1,38 @@
-import express from "express";
+import { Router } from "express";
 import {
   getAllVendors,
   getVendorById,
-  createVendor,
+  addVendor,
   updateVendor,
   deleteVendor,
 } from "../controllers/vendorController";
-import { authenticate } from "../middleware/auth";
 
-const router = express.Router();
+const router = Router();
 
-router.get("/", authenticate, getAllVendors);
-router.get("/:id", authenticate, getVendorById);
-router.post("/", authenticate, createVendor);
-router.put("/:id", authenticate, updateVendor);
-router.delete("/:id", authenticate, deleteVendor);
+/**
+ * BASE PATH (from server.ts):
+ * app.use("/api/vendors", vendorRoutes);
+ *
+ * ✔ GET     /api/vendors
+ * ✔ GET     /api/vendors/:id
+ * ✔ POST    /api/vendors
+ * ✔ PUT     /api/vendors/:id
+ * ✔ DELETE  /api/vendors/:id
+ */
+
+// GET all vendors
+router.get("/", getAllVendors);
+
+// GET vendor by ID
+router.get("/:id", getVendorById);
+
+// CREATE vendor
+router.post("/", addVendor);
+
+// UPDATE vendor
+router.put("/:id", updateVendor);
+
+// DELETE vendor
+router.delete("/:id", deleteVendor);
 
 export default router;

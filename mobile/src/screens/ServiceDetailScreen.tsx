@@ -18,24 +18,42 @@ type RootStackParamList = {
   MapPicker: { selectedService: any };
 };
 
-type ServiceDetailScreenNavigationProp = NativeStackNavigationProp<
+type ServiceDetailNavigation = NativeStackNavigationProp<
   RootStackParamList,
   "ServiceDetail"
 >;
 
-type ServiceDetailScreenRouteProp = RouteProp<RootStackParamList, "ServiceDetail">;
+type ServiceDetailRoute = RouteProp<RootStackParamList, "ServiceDetail">;
 
-export default function ServiceDetailScreen({ route }: { route: ServiceDetailScreenRouteProp }) {
-  const navigation = useNavigation<ServiceDetailScreenNavigationProp>();
+export default function ServiceDetailScreen({
+  route,
+}: {
+  route: ServiceDetailRoute;
+}) {
+  const navigation = useNavigation<ServiceDetailNavigation>();
   const { srv } = route.params || {};
 
+  // If no data received — avoid crash
   if (!srv) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "#fff" }}>No service data available.</Text>
+        <Text style={{ color: "#fff" }}>Service not found.</Text>
       </View>
     );
   }
+
+  // Safe fields with fallback values
+  const serviceImage =
+    srv.image ||
+    srv.photo ||
+    "https://via.placeholder.com/600x400.png?text=Service+Image";
+
+  const serviceName = srv.name ?? "Unnamed Service";
+  const serviceDesc =
+    srv.description ?? "No description available for this service.";
+  const servicePrice = srv.price ?? "499";
+  const serviceRating = srv.rating ?? "4.8";
+  const serviceReviews = srv.reviews ?? "120";
 
   const handleBookNow = () => {
     // Navigate to booking or map picker
@@ -44,12 +62,8 @@ export default function ServiceDetailScreen({ route }: { route: ServiceDetailScr
 
   return (
     <ScrollView style={styles.container}>
-      {/* Service Image */}
-      <Image
-        source={{ uri: srv.image || "https://via.placeholder.com/400" }}
-        style={styles.image}
-        resizeMode="cover"
-      />
+      {/* Header Image */}
+      <Image source={{ uri: serviceImage }} style={styles.image} />
 
       {/* Gradient Overlay */}
       <LinearGradient
@@ -57,27 +71,25 @@ export default function ServiceDetailScreen({ route }: { route: ServiceDetailScr
         style={styles.overlay}
       />
 
-      {/* Info Card */}
+      {/* Content */}
       <View style={styles.infoCard}>
-        <Text style={styles.title}>{srv.name}</Text>
+        <Text style={styles.title}>{serviceName}</Text>
+
         <View style={styles.ratingRow}>
           <Ionicons name="star" color="#FFD700" size={18} />
           <Text style={styles.ratingText}>
-            {srv.rating || "4.8"} ★ | {srv.reviews || "120"} reviews
+            {serviceRating} ★ | {serviceReviews} reviews
           </Text>
         </View>
 
-        <Text style={styles.desc}>
-          {srv.description ||
-            "Experience top-quality service with our skilled professionals. We ensure satisfaction, safety, and excellence every time."}
-        </Text>
+        <Text style={styles.desc}>{serviceDesc}</Text>
 
         <View style={styles.priceRow}>
           <Text style={styles.priceLabel}>Starting at</Text>
-          <Text style={styles.priceValue}>₹{srv.price || "499"}</Text>
+          <Text style={styles.priceValue}>₹{servicePrice}</Text>
         </View>
 
-        {/* Book Button */}
+        {/* Book Now Button */}
         <TouchableOpacity style={styles.bookBtn} onPress={handleBookNow}>
           <LinearGradient
             colors={["#d4af37", "#c6a664"]}
@@ -92,6 +104,9 @@ export default function ServiceDetailScreen({ route }: { route: ServiceDetailScr
   );
 }
 
+/* ============================
+   STYLE SHEET
+=============================== */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

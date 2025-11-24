@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.anonymous.homeservicesmobile"
+  },
+  "ios": {
+    "bundleIdentifier": "com.anonymous.homeservicesmobile"
+  }
+}

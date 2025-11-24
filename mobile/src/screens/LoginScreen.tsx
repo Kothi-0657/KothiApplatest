@@ -16,6 +16,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../api/api"; // ✅ shared axios instance
+import { useAuth } from "../context/AuthContext"; // ⭐ added
 
 const { width: winW, height: winH } = Dimensions.get("window");
 
@@ -23,6 +24,8 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { login } = useAuth(); // ⭐ added
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -40,18 +43,13 @@ export default function LoginScreen({ navigation }: any) {
       if (res.data.success && res.data.user && res.data.token) {
         const { user, token } = res.data;
 
-        // ✅ Clear any previous data before setting new
-        await AsyncStorage.multiRemove(["user", "token"]);
+        // ⭐ Instead of manual handling → use AuthContext login()
+        await login(user, token);
 
-        // ✅ Save fresh login session
-        await AsyncStorage.setItem("user", JSON.stringify(user));
-        await AsyncStorage.setItem("token", token);
-
-        console.log("💾 Stored user data:", user);
+        console.log("💾 Stored user data (via AuthContext):", user);
         Alert.alert("Success", "Login successful!");
 
-        // ✅ Navigate to main app
-        navigation.replace("MainTabs");
+        // ❗ DO NOT navigate here — AppNavigator will redirect automatically
       } else {
         Alert.alert(
           "Login Failed",
@@ -132,7 +130,7 @@ export default function LoginScreen({ navigation }: any) {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => navigation.replace("Signup")}
+                onPress={() => navigation.navigate("Signup")}
                 style={{ marginTop: 20 }}
               >
                 <Text style={styles.link}>

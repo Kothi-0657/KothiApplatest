@@ -1,4 +1,8 @@
+// src/screens/HomeScreen.tsx
 import React, { useState, useEffect } from "react";
+import { fetchPublicServices } from "../api/publicServiceApi";
+import { useAuth } from "../context/AuthContext";
+const logo = require("../assets/logoa1.gif");
 import {
   View,
   Text,
@@ -8,105 +12,132 @@ import {
   Image,
   Dimensions,
   ImageBackground,
-  Alert,
+  FlatList,
+  Platform,
 } from "react-native";
+
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Location from "expo-location";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: winW } = Dimensions.get("window");
 
-// ✅ Frontend tab categories (unchanged)
 const categories = [
-  { id: "home", name: "Home Services", icon: "home-outline" },
-  { id: "construction", name: "Constructions", icon: "business-outline" },
-  { id: "renovation", name: "Renovations", icon: "construct-outline" },
-  { id: "movers", name: "Movers", icon: "cube-outline" },
-  { id: "inspection", name: "Inspections", icon: "search-outline" },
+  { id: "Home Services", name: "Home Services", icon: "home-outline" },
+  { id: "Constructions", name: "Constructions", icon: "business-outline" },
+  { id: "Renovations", name: "Renovations", icon: "construct-outline" },
+  { id: "Movers", name: "Movers", icon: "cube-outline" },
+  { id: "Inspections", name: "Inspections", icon: "search-outline" },
 ];
 
 export default function HomeScreen({ navigation }: any) {
-  const [selectedTab, setSelectedTab] = useState("home");
-  const [location, setLocation] = useState<string>("Fetching...");
+  const { user, logout } = useAuth();
 
+  const [selectedTab, setSelectedTab] = useState("Home Services");
+  const [location, setLocation] = useState("Fetching...");
   const [allServices, setAllServices] = useState<{ [key: string]: any[] }>({});
 
-  // ✅ Fetch services from backend
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        // Replace with your local backend IP
-        const res = await fetch("http://192.168.29.182:4000/api/services");
-        const json = await res.json();
+  const categoryMap: Record<string, string> = {
+    "Home Service": "Home Services",
+    "Home Renovations": "Renovations",
+    "Constructions": "Constructions",
+    "Packers and Movers": "Movers",
+    "Home Inspections": "Inspections",
+  };
 
-        // ✅ Map backend category names to frontend tab IDs
-        const categoryMap: Record<string, string> = {
-          "Home Service": "home",
-          "Home Services": "home",
-          "Constructions": "construction",
-          "Construction": "construction",
-          "Home Renovations": "renovation",
-          "Renovations": "renovation",
-          "Packers and Movers": "movers",
-          "Movers": "movers",
-          "Home Inspections": "inspection",
-          "Inspections": "inspection",
-        };
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const response = await fetchPublicServices();
+        const services = response.data || [];
 
         const categorized: any = {};
-        json.data.forEach((srv: any) => {
-          const mappedKey = categoryMap[srv.category];
-          if (!mappedKey) return;
-          if (!categorized[mappedKey]) categorized[mappedKey] = [];
-          categorized[mappedKey].push(srv);
+
+        services.forEach((srv: any) => {
+          const mapped = categoryMap[srv.category];
+          if (!mapped) return;
+          if (!categorized[mapped]) categorized[mapped] = [];
+          categorized[mapped].push(srv);
         });
 
         setAllServices(categorized);
       } catch (e) {
-        console.error("Error fetching services:", e);
+        console.log("Service Fetch Error:", e);
       }
     };
-    fetchServices();
+
+    loadServices();
   }, []);
 
   const displayedServices = allServices[selectedTab] || [];
 
-  // ✅ Get user location
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setLocation("Location unavailable");
-        return;
-      }
-      const loc = await Location.getCurrentPositionAsync({});
-      const [place] = await Location.reverseGeocodeAsync(loc.coords);
-      if (place) {
-        setLocation(place.city || place.region || "My Location");
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setLocation("Unavailable");
+          return;
+        }
+
+        const loc = await Location.getCurrentPositionAsync({});
+        // reverseGeocodeAsync may be removed in some SDKs — keep safe guarded usage
+        let placeName = "My Location";
+        try {
+          const places = await Location.reverseGeocodeAsync(loc.coords);
+          const [place] = places || [];
+          placeName = place?.city || place?.region || place?.name || placeName;
+        } catch (err) {
+          // If runtime warns or API removed, ignore and show generic string
+          // (Recommended: replace with Places Autocomplete for production)
+          console.warn("reverseGeocodeAsync failed:", err);
+        }
+
+        setLocation(placeName);
+      } catch (err) {
+        console.warn("Location error:", err);
+        setLocation("Unavailable");
       }
     })();
   }, []);
 
-  // ✅ Logout handler
   const handleLogout = async () => {
-    try {
-      await AsyncStorage.multiRemove(["user", "token"]);
-      Alert.alert("Logout", "You have been logged out successfully.");
-      navigation.getParent()?.reset({
-        index: 0,
-        routes: [{ name: "Login" }],
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-      Alert.alert("Error", "Failed to log out. Please try again.");
-    }
+    await logout();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }],
+    });
   };
 
-  const openMapPicker = () => {
-    navigation.navigate("MapPicker");
-  };
+  const profileImage =
+    user?.profile_picture && user.profile_picture.startsWith("http")
+      ? { uri: user.profile_picture }
+      : require("../assets/profilepicplaceholder.png");
+
+  const openMapPicker = () => navigation.navigate("MapPicker");
+
+  const renderServiceCard = ({ item }: any) => (
+    <BlurView intensity={60} tint="light" style={styles.cardWrapper}>
+      <LinearGradient
+        colors={["rgba(255,255,255,0.42)", "rgba(255,255,255,0.12)"]}
+        style={styles.card}
+      >
+        <Text style={styles.cardTitle}>{item.name}</Text>
+
+        <View style={styles.priceRow}>
+          <Text style={styles.cardPrice}>₹{item.price}</Text>
+
+          <TouchableOpacity
+            style={styles.bookButton}
+            onPress={() => navigation.navigate("Booking", { service: item })}
+          >
+            <Text style={styles.bookButtonText}>Book Now →</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    </BlurView>
+  );
 
   return (
     <ImageBackground
@@ -119,19 +150,25 @@ export default function HomeScreen({ navigation }: any) {
         style={styles.overlay}
       >
         {/* HEADER */}
-        <View style={styles.header}>
-          <View style={styles.logoRow}>
-            <Image
-              source={require("../assets/logoa1.gif")}
-              style={styles.logo}
-            />
-            <Text style={styles.brand}>Kothi India</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.leftBlock}>
+            <Text style={styles.welcomeText}>
+              Welcome {user?.name || "Guest"}
+            </Text>
+            <Text style={styles.kothiText}>to Kothi India</Text>
           </View>
 
-          {/* Logout Button */}
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-            <Ionicons name="log-out-outline" size={22} color="#C6A664" />
-          </TouchableOpacity>
+          <Image source={logo} style={styles.headerLogo} resizeMode="contain" />
+
+          <View style={styles.rightBlock}>
+            <TouchableOpacity onPress={() => navigation.navigate("My Profile")}>
+              <Image source={profileImage} style={styles.profileImage} />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={handleLogout}>
+              <Ionicons name="log-out-outline" size={28} color="#C6A664" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* LOCATION */}
@@ -145,13 +182,12 @@ export default function HomeScreen({ navigation }: any) {
           </Text>
         </TouchableOpacity>
 
-        {/* TITLE */}
         <Text style={styles.heading}>Kothi India Home Solutions</Text>
         <Text style={styles.subheading}>
           Curated All Services under one roof
         </Text>
 
-        {/* TABS */}
+        {/* CATEGORY TABS */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -199,111 +235,151 @@ export default function HomeScreen({ navigation }: any) {
           })}
         </ScrollView>
 
-        {/* SERVICES GRID */}
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.serviceGrid}>
-            {displayedServices.map((srv, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => navigation.navigate("ServiceDetail", { srv })}
-              >
-                <BlurView intensity={80} tint="light" style={styles.cardWrapper}>
-                  <LinearGradient
-                    colors={[
-                      "rgba(255,255,255,0.5)",
-                      "rgba(255,255,255,0.3)",
-                    ]}
-                    style={styles.serviceCard}
-                  >
-                    <MaterialCommunityIcons
-                      name={srv.icon || "cog-outline"}
-                      size={42}
-                      color="#C6A664"
-                      style={{ marginBottom: 10 }}
-                    />
-                    <Text style={styles.serviceText}>{srv.name}</Text>
-                    {srv.price ? (
-                      <Text style={styles.priceText}>₹{srv.price}</Text>
-                    ) : null}
-                  </LinearGradient>
-                </BlurView>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        {/* SERVICES LIST */}
+        <FlatList
+          data={displayedServices}
+          renderItem={renderServiceCard}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+          style={{ marginTop: 20 }}
+        />
       </LinearGradient>
     </ImageBackground>
   );
 }
 
-// ✅ STYLES
 const styles = StyleSheet.create({
   bgImage: { flex: 1 },
-  overlay: { flex: 1, paddingTop: 60, paddingHorizontal: 16 },
-  header: {
+  overlay: { flex: 1 },
+
+  headerRow: {
+    marginTop: 40,
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 15,
   },
-  logoRow: { flexDirection: "row", alignItems: "center" },
-  logo: { width: 40, height: 40, borderRadius: 8, marginRight: 8 },
-  brand: { color: "#C6A664", fontWeight: "700", fontSize: 18 },
-  logoutButton: {
-    backgroundColor: "rgba(255,255,255,0.6)",
+
+  leftBlock: {},
+  welcomeText: { color: "#333", fontSize: 18, fontWeight: "700" },
+  kothiText: { color: "#666", fontSize: 14 },
+
+  headerLogo: { width: 80, height: 80 },
+
+  rightBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  profileImage: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    padding: 6,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: "#C6A664",
   },
+
   locationContainer: {
+    marginTop: 10,
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "center",
-    backgroundColor: "rgba(255,255,255,0.4)",
+    padding: 6,
+    paddingHorizontal: 12,
+    backgroundColor: "rgba(255,255,255,0.7)",
     borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
-    marginTop: 8,
   },
-  locationText: { color: "#444", fontSize: 12, marginLeft: 4, maxWidth: 120 },
+  locationText: { marginLeft: 6, color: "#333", maxWidth: winW * 0.6 },
+
   heading: {
     fontSize: 22,
-    color: "#1e1e1e",
     fontWeight: "700",
-    marginTop: 20,
+    color: "#333",
     textAlign: "center",
+    marginTop: 20,
   },
-  subheading: { fontSize: 13, color: "#666", textAlign: "center", marginBottom: 20 },
-  tabContainer: { flexGrow: 0, marginBottom: 15 },
+  subheading: {
+    textAlign: "center",
+    color: "#555",
+    marginBottom: 20,
+  },
+
+  tabContainer: {
+    marginTop: 15,
+    paddingLeft: 10,
+  },
+
   tabBlur: {
     flexDirection: "row",
-    alignItems: "center",
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 25,
+    paddingHorizontal: 14,
+    borderRadius: 20,
     borderWidth: 1,
     marginRight: 10,
   },
-  tabText: { fontWeight: "600", fontSize: 13 },
-  serviceGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  /* Glass card wrapper */
   cardWrapper: {
-    borderRadius: 20,
-    overflow: "hidden",
+    marginHorizontal: 15,
     marginBottom: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+
+  card: {
+    padding: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.35)",
+    backgroundColor: "rgba(255,255,255,0.18)",
+    // web-friendly boxShadow (avoid deprecated "shadow*" warnings)
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0 10px 24px rgba(198,166,100,0.12)" }
+      : {}),
+    // native elevation for Android; keeps depth on mobile
+    elevation: 6,
+  },
+
+  cardTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#000",
+  },
+
+  priceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 12,
+  },
+
+  cardPrice: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#333",
+  },
+
+  bookButton: {
+    backgroundColor: "#C6A664",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    // boxShadow instead of shadow* for web
+    ...(Platform.OS === "web" ? { boxShadow: "0 6px 14px rgba(198,166,100,0.28)" } : {}),
     elevation: 4,
   },
-  serviceCard: {
-    width: winW * 0.43,
-    borderRadius: 20,
-    paddingVertical: 25,
-    alignItems: "center",
-    justifyContent: "center",
+
+  bookButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 13,
+    letterSpacing: 0.4,
   },
-  serviceText: { color: "#333", fontWeight: "600", fontSize: 15 },
-  priceText: { color: "#C6A664", fontWeight: "600", fontSize: 13, marginTop: 4 },
 });
