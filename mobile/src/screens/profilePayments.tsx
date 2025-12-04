@@ -12,7 +12,7 @@ export default function ProfilePayments() {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const res = await api.get(`/payments/user/${user.id}`);
+        const res = await api.get(`/payment/user/${user.id}`);
         setPayments(res.data.payments || []);
       } catch (err) {
         console.log(err);

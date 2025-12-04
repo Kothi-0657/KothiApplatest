@@ -12,18 +12,22 @@ export default function ProfileBookings() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await api.get(`/bookings/user/${user.id}`);
+        // ✅ Correct route based on customerRoutes.ts
+        const res = await api.get(`/customer/customer/${user.id}`);
+
         setBookings(res.data.bookings || []);
       } catch (err) {
-        console.log(err);
+        console.log("Error fetching customer bookings:", err);
       } finally {
         setLoading(false);
       }
     };
+
     if (user?.id) fetchBookings();
   }, [user]);
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} color="#06B6D4" size="large" />;
+  if (loading)
+    return <ActivityIndicator style={{ flex: 1 }} color="#FFD700" size="large" />;
 
   if (!bookings.length)
     return (
@@ -34,13 +38,25 @@ export default function ProfileBookings() {
 
   const renderItem = ({ item }: any) => (
     <View style={styles.card}>
-      <Text style={styles.service}>{item.service_name}</Text>
-      <Text style={styles.date}>Scheduled: {new Date(item.scheduled_at).toLocaleString()}</Text>
-      <Text style={[styles.status, item.status === "accepted" ? styles.accepted : styles.pending]}>
+      <Text style={styles.service}>{item.service}</Text>
+
+      <Text style={styles.date}>Date: {item.date}</Text>
+      <Text style={styles.date}>Time: {item.time}</Text>
+
+      <Text
+        style={[
+          styles.status,
+          item.status === "accepted" ? styles.accepted : styles.pending,
+        ]}
+      >
         Status: {item.status}
       </Text>
-      <Text style={styles.address}>Address: {item.address}</Text>
-      <Text style={styles.notes}>{item.notes}</Text>
+
+      <Text style={styles.price}>Price: ₹{item.price}</Text>
+
+      <Text style={styles.created}>
+        Booked on: {new Date(item.created_at).toLocaleString()}
+      </Text>
     </View>
   );
 
@@ -55,7 +71,7 @@ export default function ProfileBookings() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#1c1c1c" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
   msg: { color: "#fff", fontSize: 16 },
 
   card: {
@@ -66,11 +82,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
   },
+
   service: { color: "#fff", fontWeight: "700", fontSize: 16 },
   date: { color: "#9CA3AF", marginTop: 4 },
-  status: { marginTop: 4, fontWeight: "600" },
+
+  status: { marginTop: 6, fontSize: 14, fontWeight: "600" },
   accepted: { color: "#06B6D4" },
   pending: { color: "#FBBF24" },
-  address: { color: "#fff", marginTop: 4, fontSize: 14 },
-  notes: { color: "#9CA3AF", marginTop: 4, fontSize: 13, fontStyle: "italic" },
+
+  price: { color: "#fff", marginTop: 6, fontSize: 14 },
+  created: { color: "#9CA3AF", marginTop: 6, fontSize: 12 },
 });

@@ -3,8 +3,10 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-
+import { BlurView } from "expo-blur";
 import { useAuth } from "../context/AuthContext";
+import { View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 // Screens
 import HomeScreen from "../screens/HomeScreen";
@@ -18,7 +20,8 @@ import TermsAndConditions from "../screens/TermsAndConditions";
 import PaymentScreen from "../screens/PaymentScreen";
 import PaymentSuccessScreen from "../screens/PaymentSuccess";
 import PaymentFailedScreen from "../screens/PaymentFailed";
-
+// NEW
+import CartScreen from "../screens/CartScreen";
 // Profile related screens
 import ProfileAddress from "../screens/profileAddress";
 import ProfileBookings from "../screens/profileBookings";
@@ -32,14 +35,115 @@ function Tabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: "#000" },
-        tabBarActiveTintColor: "#FFD700",
-        tabBarInactiveTintColor: "#888",
+        tabBarShowLabel: false,
+
+        tabBarBackground: () => (
+          <BlurView intensity={30} tint="dark" style={{ flex: 1 }} />
+        ),
+
+        tabBarStyle: {
+          position: "absolute",
+          bottom: 10,
+          left: 20,
+          right: 20,
+          height: 55,
+          borderRadius: 30,
+          backgroundColor: "rgba(33,14,14,0.45)",
+          borderTopWidth: 0,
+        },
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="My Profile" component={ProfileScreen} />
-      <Tab.Screen name="Help" component={HelpScreen} />
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: focused
+                  ? "rgba(255,215,0,0.25)"
+                  : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <Ionicons name="home" size={22} color={color} />
+            </View>
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: focused
+                  ? "rgba(255,215,0,0.25)"
+                  : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <Ionicons name="cart-outline" size={22} color={color} />
+            </View>
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="My Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: focused
+                  ? "rgba(255,215,0,0.25)"
+                  : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <Ionicons name="person" size={22} color={color} />
+            </View>
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Help"
+        component={HelpScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: focused
+                  ? "rgba(255,215,0,0.25)"
+                  : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <Ionicons name="help-circle" size={22} color={color} />
+            </View>
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -62,6 +166,18 @@ export default function AppNavigator() {
             {/* Main Tabs */}
             <Stack.Screen name="Main" component={Tabs} />
 
+            {/* Cart (also available in stack) */}
+            <Stack.Screen
+              name="Cart"
+              component={CartScreen}
+              options={{
+                headerShown: true,
+                headerStyle: { backgroundColor: "#000" },
+                headerTintColor: "#FFD700",
+                title: "My Cart",
+              }}
+            />
+
             {/* Booking & Payment Screens */}
             <Stack.Screen
               name="Booking"
@@ -73,21 +189,10 @@ export default function AppNavigator() {
                 title: "Booking",
               }}
             />
-            <Stack.Screen
-              name="PaymentScreen"
-              component={PaymentScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="PaymentSuccess"
-              component={PaymentSuccessScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="PaymentFailed"
-              component={PaymentFailedScreen}
-              options={{ headerShown: false }}
-            />
+            <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
+            <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
+            <Stack.Screen name="PaymentFailed" component={PaymentFailedScreen} />
+
             <Stack.Screen
               name="TermsAndConditions"
               component={TermsAndConditions}
@@ -106,51 +211,10 @@ export default function AppNavigator() {
               }}
             />
 
-            {/* Profile Stack Screens */}
-            <Stack.Screen
-              name="Profile"
-              component={ProfileScreen}
-              options={{
-                headerShown: true,
-                headerStyle: { backgroundColor: "#1c1c1c" },
-                headerTintColor: "#fff",
-                headerTitleStyle: { fontWeight: "700" },
-                title: "My Profile",
-              }}
-            />
-            <Stack.Screen
-              name="Bookings"
-              component={ProfileBookings}
-              options={{
-                headerShown: true,
-                headerStyle: { backgroundColor: "#1c1c1c" },
-                headerTintColor: "#fff",
-                headerTitleStyle: { fontWeight: "700" },
-                title: "My Bookings",
-              }}
-            />
-            <Stack.Screen
-              name="Addresses"
-              component={ProfileAddress}
-              options={{
-                headerShown: true,
-                headerStyle: { backgroundColor: "#1c1c1c" },
-                headerTintColor: "#fff",
-                headerTitleStyle: { fontWeight: "700" },
-                title: "Saved Addresses",
-              }}
-            />
-            <Stack.Screen
-              name="Payments"
-              component={ProfilePayments}
-              options={{
-                headerShown: true,
-                headerStyle: { backgroundColor: "#1c1c1c" },
-                headerTintColor: "#fff",
-                headerTitleStyle: { fontWeight: "700" },
-                title: "Payment History",
-              }}
-            />
+            {/* Profile Subscreens */}
+            <Stack.Screen name="Bookings" component={ProfileBookings} />
+            <Stack.Screen name="Addresses" component={ProfileAddress} />
+            <Stack.Screen name="Payments" component={ProfilePayments} />
           </>
         )}
       </Stack.Navigator>

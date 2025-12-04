@@ -1,27 +1,108 @@
 // src/components/ServiceCard.tsx
 import React from "react";
-import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { View, Text, TouchableOpacity, Platform, StyleSheet } from "react-native";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import { useCart } from "../context/CartContext";
 
-export default function ServiceCard({ item, onPress }: any) {
+type Props = {
+  service: any;
+  showBook?: boolean; // if true show Book now (backwards compat)
+  onPress?: () => void; // optional for custom press
+};
+
+export default function ServiceCard({ service, showBook = false, onPress }: Props) {
+  const { addItem } = useCart();
+
+  const handleAddToCart = () => {
+    addItem({
+      id: service.id,
+      name: service.name,
+      price: Number(service.price || 0),
+      ...service,
+    });
+  };
+
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(item)}>
-      <MaterialCommunityIcons name={item.icon || "cog-outline"} size={36} color="#d4af37" />
-      <Text style={styles.title}>{item.name}</Text>
-      {item.price ? <Text style={styles.price}>₹{item.price}</Text> : null}
-    </TouchableOpacity>
+    <BlurView intensity={60} tint="light" style={styles.cardWrapper}>
+      <LinearGradient
+        colors={["rgba(255,255,255,0.42)", "rgba(255,255,255,0.12)"]}
+        style={styles.card}
+      >
+        <Text style={styles.cardTitle}>{service.name}</Text>
+
+        <View style={styles.priceRow}>
+          <Text style={styles.cardPrice}>₹{service.price}</Text>
+
+          {showBook ? (
+            <TouchableOpacity style={styles.bookButton} onPress={onPress}>
+              <Text style={styles.bookButtonText}>Book Now →</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.bookButton} onPress={handleAddToCart}>
+              <Text style={styles.bookButtonText}>Add to Cart</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </LinearGradient>
+    </BlurView>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: "48%",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    alignItems: "flex-end",
+  cardWrapper: {
+    marginHorizontal: 69,
+    marginBottom: 14,
+    borderRadius: 14,
+    overflow: "hidden",
   },
-  title: { color: "#fff", marginTop: 8, fontWeight: "600" },
-  price: { color: "#d4af37", marginTop: 6, fontWeight: "700" },
+
+  card: {
+    padding: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.30)",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0 10px 20px rgba(198,166,100,0.10)" }
+      : {}),
+    elevation: 4,
+  },
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
+
+  priceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 6,
+  },
+
+  cardPrice: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: "#333",
+  },
+
+  bookButton: {
+    backgroundColor: "#070769ff",
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0 6px 14px rgba(198,166,100,0.28)" }
+      : {}),
+    elevation: 6,
+  },
+
+  bookButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 10,
+    letterSpacing: 0.3,
+  },
 });

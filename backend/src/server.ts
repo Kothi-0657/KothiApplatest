@@ -12,6 +12,10 @@ import paymentRoutes from "./routes/paymentsRoutes";
 import adminAuthRoutes from "./routes/adminAuthRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import publicServicesRoutes from "./routes/publicServicesRoutes";
+import customerBookingRoutes from "./routes/customerBookingRoutes";
+import { getBookingsByCustomer } from "./controllers/customerBookingController";
+
+
 import authRoutes from "./routes/authRoutes";
 import pool from "./config/db";
 export { pool };
@@ -44,7 +48,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/customers", customersRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/vendors", vendorRoutes);
-
+app.use("/api/customer", customerBookingRoutes);
 // Start Server
 const port = Number(process.env.PORT || 4000);
 app.listen(port, "0.0.0.0", () => {
