@@ -91,29 +91,18 @@ export const createPayment = async (req: Request, res: Response) => {
 export const getAllPayments = async (_req: Request, res: Response) => {
   try {
     const q = `
-      SELECT
-        p.*,
-        b.booking_ref,
-        b.scheduled_at AS booking_date,
-
-        -- payer details
-        (SELECT json_build_object(
-          'id', c.id,
-          'name', c.name,
-          'phone', c.phone
-        ) FROM customers c WHERE c.id = p.payer_id) AS payer,
-
-        -- payee details
-        (SELECT json_build_object(
-          'id', v.id,
-          'name', v.full_name,
-          'phone', v.phone
-        ) FROM vendors v WHERE v.id = p.payee_id) AS payee
-
-      FROM payments p
-      LEFT JOIN bookings b ON b.id = p.related_booking
-      ORDER BY p.created_at DESC;
-    `;
+  SELECT
+    p.*,
+    b.booking_ref,
+    b.scheduled_at AS booking_date,
+    (SELECT json_build_object('id', c.id, 'name', c.name, 'phone', c.phone)
+       FROM customers c WHERE c.id = p.payer_id) AS payer,
+    (SELECT json_build_object('id', v.id, 'name', v.company_name, 'phone', v.phone)
+       FROM vendors v WHERE v.id = p.payee_id) AS payee
+  FROM payments p
+  LEFT JOIN bookings b ON b.id = p.related_booking
+  ORDER BY p.created_at DESC;
+`;
 
     const result = await pool.query(q);
     return res.json({ success: true, payments: result.rows });

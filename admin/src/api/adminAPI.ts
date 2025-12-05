@@ -41,22 +41,33 @@ export const updateBooking = async (id: string, status: string) => {
   return adminAPI.put(`/bookings/${id}/status`, { status });
 };
 
-// -------------------------------- PAYMENTS --------------------------------
+// ---------------------------- PAYMENTS ----------------------------
+
+// GET ALL PAYMENTS
 export const fetchPayments = async () => {
-  const res = await adminAPI.get("/payments");
+  const res = await adminAPI.get("/api/admin/payments");
   return res.data.payments || [];
 };
 
-export const updatePaymentStatus = async (id: string, status: string) => {
-  return adminAPI.put(`/payments/${id}/status`, { status });
+// UPDATE PAYMENT (full)
+export const updatePayment = async (id: string, data: any) => {
+  return adminAPI.put(`/api/admin/payments/${id}`, data);
 };
 
-export const verifyPayment = async (id: string) => {
-  return adminAPI.put(`/payments/${id}/verify`);
-};
-
+// DELETE PAYMENT
 export const deletePayment = async (id: string) => {
-  return adminAPI.delete(`/payments/${id}`);
+  return adminAPI.delete(`/api/admin/payments/${id}`);
+};
+
+// GET PAYMENT BY ID
+export const getPaymentById = async (id: string) => {
+  const res = await adminAPI.get(`/api/admin/payments/${id}`);
+  return res.data.payment;
+};
+
+// CREATE PAYMENT
+export const createPayment = async (data: any) => {
+  return adminAPI.post("/api/admin/payments", data);
 };
 
 // -------------------------------- VENDORS --------------------------------

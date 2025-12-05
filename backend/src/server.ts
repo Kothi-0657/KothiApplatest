@@ -42,7 +42,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // Admin + Protected Routes
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/payments", paymentRoutes);
+app.use("/api/admin/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/customers", customersRoutes);
