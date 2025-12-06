@@ -22,7 +22,7 @@ export const fetchUserBookings = async (customerId: string) => {
 };
 
 export const fetchUserPayments = async (customerId: string) => {
-  const res = await api.get(`/api/payments/user/${customerId}`);
+  const res = await api.get(`/api/payments/my/${customerId}`);
   return res.data.payments || [];
 };
 

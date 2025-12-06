@@ -4,5 +4,8 @@
   },
   "ios": {
     "bundleIdentifier": "com.anonymous.homeservicesmobile"
-  }
+  },
+  "plugins": [
+    "expo-secure-store"
+  ]
 }

@@ -7,7 +7,7 @@ import { BlurView } from "expo-blur";
 import { useAuth } from "../context/AuthContext";
 import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
+import { Image } from "react-native";
 // Screens
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
@@ -54,27 +54,36 @@ function Tabs() {
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 21,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: focused
-                  ? "rgba(255,215,0,0.25)"
-                  : "rgba(255,255,255,0.08)",
-              }}
-            >
-              <Ionicons name="home" size={22} color={color} />
-            </View>
-          ),
+  name="Home"
+  component={HomeScreen}
+  options={{
+    tabBarIcon: ({ color, focused }) => (
+      <View
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: focused
+            ? "rgba(255,215,0,0.25)"
+            : "rgba(255,255,255,0.08)",
         }}
-      />
+      >
+        <Image
+          source={require("../assets/logoa1.gif")}
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 6,
+          }}
+          resizeMode="contain"
+        />
+      </View>
+    ),
+  }}
+/>
+
 
       <Tab.Screen
         name="Cart"

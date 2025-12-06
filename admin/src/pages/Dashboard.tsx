@@ -1,40 +1,37 @@
+// admin/src/pages/Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import adminAPI from "../api/adminAPI";
 import StatCard from "../components/StatCard";
 import FilterBar from "../components/FilterBar";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import DataTable from "../components/DataTable";
+import Chart from "../components/Chart";
 
-type DashboardData = {
+type DashboardResponse = {
   totalCustomers: number;
   totalBookings: number;
   totalRevenue: number;
   graphData: { day: string; revenue: number }[];
+  monthly: { months: string[]; series: { category: string; data: number[] }[] };
   cityDistribution: { city: string; bookings: number; revenue: number }[];
+  customersList: any[];
+  vendorsList: any[];
+  paymentsList: any[];
 };
 
-export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardData | null>(null);
-  const [filters, setFilters] = useState<{ from?: string; to?: string }>({});
+export default function DashboardPage() {
+  const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<{ from?: string; to?: string; city?: string; category?: string }>({});
 
   useEffect(() => {
-    fetchDashboard(filters);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadData();
   }, []);
 
-  const fetchDashboard = async (f = {}) => {
+  const loadData = async (f = {}) => {
     try {
       setLoading(true);
-      const res = await adminAPI.get("/dashboard", { params: f });
-      setStats(res.data);
+      const res = await adminAPI.get("/api/dashboard/extended", { params: f });
+      setData(res.data);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {
@@ -42,118 +39,109 @@ export default function Dashboard() {
     }
   };
 
-  const handleFilter = (p: { from?: string; to?: string }) => {
-    setFilters(p);
-    fetchDashboard(p);
+  const onFilter = (f: any) => {
+    setFilters(f);
+    loadData(f);
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.header}>📊 Admin Dashboard</h2>
+    <div style={styles.page}>
+      <div style={styles.headerRow}>
+        <h1 style={styles.title}>Admin Dashboard</h1>
+        <div style={{ flex: 1 }} />
+        <FilterBar
+          from={filters.from}
+          to={filters.to}
+          onFilter={(p) => onFilter({ ...filters, ...p })}
+        />
+      </div>
 
-      {/* 🔍 Filter Section */}
-      <FilterBar
-        from={filters.from}
-        to={filters.to}
-        onFilter={handleFilter}
-        cityData={stats?.cityDistribution || []}
-      />
+      <div style={styles.statsRow}>
+        <StatCard title="Total Customers" value={data?.totalCustomers ?? "—"} />
+        <StatCard title="Total Bookings" value={data?.totalBookings ?? "—"} />
+        <StatCard title="Total Revenue" value={data ? `₹${data.totalRevenue.toLocaleString()}` : "—"} />
+      </div>
 
-      {/* Stats Overview */}
-      {loading ? (
-        <p style={styles.loading}>Loading data...</p>
-      ) : (
-        <>
-          <div style={styles.statsGrid}>
-            <StatCard title="Total Customers" value={stats?.totalCustomers ?? "—"} />
-            <StatCard title="Total Bookings" value={stats?.totalBookings ?? "—"} />
-            <StatCard
-              title="Total Revenue"
-              value={
-                stats?.totalRevenue
-                  ? `₹${stats.totalRevenue.toLocaleString()}`
-                  : "₹0"
-              }
-            />
-          </div>
+      <div style={styles.chartsRow}>
+        <div style={styles.chartBox}>
+          <h3 style={styles.boxTitle}>Revenue Trend (by day)</h3>
+          <Chart type="line" data={data?.graphData || []} xKey="day" yKey="revenue" />
+        </div>
 
-          {/* Revenue Chart */}
-          <div style={styles.chartContainer}>
-            <h3 style={styles.subHeader}>Revenue Trend (By Day)</h3>
-            <div style={{ height: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={
-                    stats?.graphData?.map((g) => ({
-                      day: g.day,
-                      revenue: Number(g.revenue),
-                    })) || []
-                  }
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                  <XAxis dataKey="day" stroke="#999" />
-                  <YAxis stroke="#999" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#222",
-                      border: "none",
-                      borderRadius: 8,
-                    }}
-                    labelStyle={{ color: "#d4af37" }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#d4af37"
-                    strokeWidth={2}
-                    dot={{ fill: "#d4af37" }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </>
-      )}
+        <div style={styles.chartBox}>
+          <h3 style={styles.boxTitle}>Monthly Sales by Service Type</h3>
+          <Chart type="bar" data={data?.monthly || { months: [], series: [] }} />
+        </div>
+      </div>
+
+      <div style={styles.tablesRow}>
+        <div style={styles.tableCard}>
+          <h3 style={styles.boxTitle}>Customers — Progress Report</h3>
+          <DataTable
+            columns={[
+              { title: "Name", dataIndex: "name" },
+              { title: "Phone", dataIndex: "phone" },
+              { title: "City", dataIndex: "city" },
+              { title: "Requested", dataIndex: "requested" },
+              { title: "Accepted", dataIndex: "accepted" },
+              { title: "Completed", dataIndex: "completed" },
+              { title: "Total Bookings", dataIndex: "total_bookings" },
+              { title: "Last Booked", dataIndex: "last_booked_at" },
+            ]}
+            data={data?.customersList || []}
+          />
+        </div>
+
+        <div style={styles.tableCard}>
+          <h3 style={styles.boxTitle}>Vendors & Allocated Services</h3>
+          <DataTable
+            columns={[
+              { title: "Vendor", dataIndex: "name" },
+              { title: "Phone", dataIndex: "phone" },
+              { title: "Email", dataIndex: "email" },
+              { title: "Total Jobs", dataIndex: "total_jobs" },
+              { title: "Services Offered", dataIndex: "services_offered_count" },
+              { title: "Bookings Assigned", dataIndex: "bookings_assigned" },
+            ]}
+            data={data?.vendorsList || []}
+          />
+        </div>
+
+        <div style={styles.tableCardFull}>
+          <h3 style={styles.boxTitle}>Recent Payments</h3>
+          <DataTable
+            columns={[
+              { title: "Ref", dataIndex: "payment_ref" },
+              { title: "Amount", dataIndex: "amount" },
+              { title: "Currency", dataIndex: "currency" },
+              { title: "Status", dataIndex: "status" },
+              { title: "Method", dataIndex: "method" },
+              { title: "Booking Ref", dataIndex: "booking_ref" },
+              { title: "Service", dataIndex: "service_name" },
+              { title: "Created At", dataIndex: "created_at" },
+            ]}
+            data={data?.paymentsList || []}
+          />
+        </div>
+      </div>
     </div>
   );
 }
 
-/* 🎨 Styles */
 const styles: Record<string, React.CSSProperties> = {
-  container: {
-    padding: 24,
-    backgroundColor: "#0d0d0d",
+  page: {
+    padding: 20,
+    background: "#0d0d0d",
     minHeight: "100vh",
-    color: "#302d2dff",
+    color: "#fff",
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 700,
-    marginBottom: 16,
-    color: "#d4af37",
-  },
-  subHeader: {
-    fontSize: 18,
-    marginBottom: 8,
-    color: "#d4af37",
-  },
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 16,
-    marginTop: 16,
-  },
-  chartContainer: {
-    marginTop: 32,
-    background: "#1a1a1a",
-    padding: 16,
-    borderRadius: 12,
-    boxShadow: "0 4px 10px rgba(0,0,0,0.4)",
-  },
-  loading: {
-    color: "#999",
-    textAlign: "center",
-    marginTop: 40,
-  },
+  headerRow: { display: "flex", alignItems: "center", gap: 12, marginBottom: 16 },
+  title: { margin: 0, color: "#d4af37" },
+  statsRow: { display: "flex", gap: 12, marginTop: 12 },
+  chartsRow: { display: "flex", gap: 12, marginTop: 20, alignItems: "stretch" },
+  chartBox: { flex: 1, background: "#111827", padding: 12, borderRadius: 8 },
+  boxTitle: { color: "#d4af37", margin: "0 0 8px 0" },
+  tablesRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 20 },
+  tableCard: { background: "#0b1220", padding: 12, borderRadius: 8 },
+  tableCardFull: { background: "#0b1220", padding: 12, borderRadius: 8, gridColumn: "1 / span 2" },
 };

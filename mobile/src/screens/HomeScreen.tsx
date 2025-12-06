@@ -226,18 +226,17 @@ export default function HomeScreen({ navigation }: any) {
       resizeMode="cover"
     >
       <LinearGradient
-        colors={["rgba(255,255,255,0.9)", "rgba(240,240,240,0.85)"]}
+        colors={["rgba(12, 11, 11, 0.9)", "rgba(40, 30, 30, 0.85)"]}
         style={styles.overlay}
       >
         {/* HEADER */}
         <View style={styles.headerRow}>
+          <Image source={logo} style={styles.headerLogo} resizeMode="contain" />
           <View style={styles.leftBlock}>
             <Text style={styles.welcomeText}>Welcome {user?.name || "Guest"}</Text>
             <Text style={styles.kothiText}>to Kothi India Private Limited</Text>
           </View>
-
-          <Image source={logo} style={styles.headerLogo} resizeMode="contain" />
-
+    
           <View style={styles.rightBlock}>
             <TouchableOpacity onPress={() => navigation.navigate("My Profile")}>
               <Image source={profileImage} style={styles.profileImage} />
@@ -282,6 +281,10 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={styles.locationText}>{location}</Text>
         </TouchableOpacity>
 
+        {/* HEADINGS */}
+          <Text style={styles.heading}>Kothi India Home Solutions</Text>
+        <Text style={styles.subheading}>Curated All Services under one roof</Text>
+
         {/* SEARCH BAR */}
         <View style={{ paddingHorizontal: 18, marginTop: 10 }}>
           <View
@@ -292,7 +295,7 @@ export default function HomeScreen({ navigation }: any) {
               paddingHorizontal: 10,
               borderRadius: 10,
               borderWidth: 1,
-              borderColor: "rgba(0,0,0,0.06)",
+              borderColor: "rgba(247, 96, 9, 0.06)",
             }}
           >
             <Ionicons name="search-outline" size={18} color="#666" />
@@ -303,7 +306,7 @@ export default function HomeScreen({ navigation }: any) {
                 setSearchActive(t.length > 0);
               }}
               placeholder="Search services, subcategory or category..."
-              style={{ flex: 1, paddingVertical: 8, paddingLeft: 8 }}
+              style={{ flex: 1, paddingVertical: 6, paddingLeft: 6 }}
               returnKeyType="search"
             />
             {searchText ? (
@@ -314,14 +317,11 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
-        <Text style={styles.heading}>Kothi India Home Solutions</Text>
-        <Text style={styles.subheading}>Curated All Services under one roof</Text>
-
         {/* SLIDE ANIMATION WRAPPER */}
         <Animated.View
           style={{
             transform: [{ translateX: slideAnim }],
-            marginTop: 12,
+            marginTop: 19,
             flex: 1,
           }}
         >
@@ -338,13 +338,13 @@ export default function HomeScreen({ navigation }: any) {
                       style={[
                         styles.tabBlur,
                         {
-                          borderColor: isActive ? "#C6A664" : "rgba(0,0,0,0.2)",
+                          borderColor: isActive ? "#ff6f00ff" : "rgba(0,0,0,0.2)",
                           backgroundColor: isActive ? "rgba(198,166,100,0.25)" : "rgba(255,255,255,0.15)",
                         },
                       ]}
                     >
-                      <Ionicons name={cat.icon} size={16} color={isActive ? "#C6A664" : "#555"} />
-                      <Text style={[styles.tabText, { color: isActive ? "#C6A664" : "#555" }]}>{cat.name}</Text>
+                      <Ionicons name={cat.icon} size={16} color={isActive ? "#050200ff" : "#f9f7f7ff"} />
+                      <Text style={[styles.tabText, { color: isActive ? "#fa7102ff" : "#fcf8f8ff" }]}>{cat.name}</Text>
                     </BlurView>
                   </TouchableOpacity>
                 );
@@ -410,12 +410,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 15,
+    paddingHorizontal: 25,
   },
 
-  leftBlock: {},
-  welcomeText: { color: "#333", fontSize: 18, fontWeight: "700" },
-  kothiText: { color: "#666", fontSize: 14 },
+  leftBlock: {gap: 2 },
+  welcomeText: { color: "#ed7733ff", fontSize: 12, fontWeight: "700", textAlign: "left",},
+  kothiText: { color: "#e1a263ff", fontSize: 10, textAlign: "left", },
 
   headerLogo: { width: 80, height: 80 },
 
@@ -448,13 +448,13 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#333",
+    color: "#ee8649ff",
     textAlign: "center",
     marginTop: 12,
   },
   subheading: {
     textAlign: "center",
-    color: "#555",
+    color: "#eebb95ff",
     marginBottom: 10,
   },
 
