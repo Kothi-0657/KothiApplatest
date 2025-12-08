@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d2c5b5c6-f78f-47a6-8a66-8e182eb8c5f6" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/admin/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/admin/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/admin/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/src/api/adminAPI.ts" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/api/adminAPI.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/src/pages/Bookings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/pages/Bookings.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/src/pages/Payments.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/pages/Payments.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/src/pages/vendors.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/pages/vendors.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/src/routes/AdminRoutes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/node_modules/.package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/node_modules/.package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/bookingController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/bookingController.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/paymentController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/paymentController.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/serviceController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/serviceController.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/vendorController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/vendorController.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/adminRoutes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/adminRoutes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/adminpaymentRoutes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/adminpaymentRoutes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/authRoutes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/authRoutes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/bookingRoutes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/bookingRoutes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/vendorRoutes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/vendorRoutes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/server.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/server.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/.package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/.package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/README-es.md" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/README-es.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/cli-options.js" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/cli-options.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/env-options.js" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/env-options.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/main.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/main.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/lib/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/node_modules/dotenv/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/node_modules/dotenv/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/api/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/api/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/components/ServiceCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/components/ServiceCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/context/AuthContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/context/AuthContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/navigation/AppNavigator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/navigation/AppNavigator.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/BookingScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/screens/BookingScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/HelpScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/screens/HelpScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/HomeScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/screens/HomeScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/LoginScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/screens/LoginScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/ProfileScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/screens/ProfileScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/ServiceDetailScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/screens/ServiceDetailScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/ServiceListScreen.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/screens/SignupScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/screens/SignupScreen.tsx" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 2
+}]]></component>
+  <component name="ProjectId" id="35skBE7ABwwZbO7bz4YZqlaMM44" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/kishlaysingh/Documents/KothiApp/KothiApptry/kothimobileapp/home-services-app"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d2c5b5c6-f78f-47a6-8a66-8e182eb8c5f6" name="Changes" comment="" />
+      <created>1763906029165</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1763906029165</updated>
+    </task>
+    <servers />
+  </component>
+</project>
