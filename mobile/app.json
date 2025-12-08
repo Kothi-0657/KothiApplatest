@@ -1,0 +1,11 @@
+{
+  "android": {
+    "package": "com.anonymous.homeservicesmobile"
+  },
+  "ios": {
+    "bundleIdentifier": "com.anonymous.homeservicesmobile"
+  },
+  "plugins": [
+    "expo-secure-store"
+  ]
+}
