@@ -4,6 +4,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect } from
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
+  token(token: any): unknown;
   location: string;
   profileImage: any;
   id: number;

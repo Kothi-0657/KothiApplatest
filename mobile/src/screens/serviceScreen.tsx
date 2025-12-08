@@ -204,15 +204,15 @@ export default function ServiceScreen({ navigation }: any) {
                   {
                     borderColor: active ? "#ff6f00ff" : "transparent",
                     backgroundColor: active
-                      ? "rgba(198,166,100,0.25)"
-                      : "rgba(255,255,255,0.15)",
+                      ? "rgba(129, 192, 39, 0.25)"
+                      : "rgba(52, 171, 19, 0.6)",
                   },
                 ]}
               >
                 <Ionicons
                   name={cat.icon}
                   size={16}
-                  color={active ? "#ff6f00" : "#555"}
+                  color={active ? "#080401ff" : "#f3670aff"}
                 />
                 <Text
                   style={{
@@ -229,7 +229,7 @@ export default function ServiceScreen({ navigation }: any) {
       </ScrollView>
 
       {/* CONTENT */}
-      <Animated.View style={{ flex: 1, transform: [{ translateX: slideAnim }] }}>
+      <Animated.View style={{ flex: 20, transform: [{ translateX: slideAnim }] }}>
         {/* SEARCH MODE */}
         {searchActive ? (
           <FlatList
@@ -280,7 +280,7 @@ export default function ServiceScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1a1a1a", paddingTop: 40 },
+  container: { flex: 1, backgroundColor: "#0b2557ff", paddingTop: 40 },
   pageTitle: {
     textAlign: "center",
     color: "#f0b174",
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.95)",
     marginHorizontal: 18,
     marginTop: 12,
-    padding: 8,
+    padding: 6,
     borderRadius: 10,
   },
 
@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
 
   cardWrapper: {
     marginHorizontal: 20,
+    marginTop: 10,
     marginBottom: 14,
     borderRadius: 14,
     overflow: "hidden",

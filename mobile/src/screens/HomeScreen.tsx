@@ -28,6 +28,7 @@ import banner3 from "../assets/banners/conb.png";
 import banner4 from "../assets/banners/elecb.png";
 import banner5 from "../assets/banners/inteb.png";
 import banner6 from "../assets/banners/plumb.png";
+import banner7 from "../assets/banners/carb.png";
 
 // 🟣 LOCAL OFFERS (Add your assets)
 import offer1 from "../assets/offers/cleano.mp4";
@@ -53,6 +54,7 @@ export default function HomeScreen({ navigation }: any) {
     { id: "4", image: banner4 },
     { id: "5", image: banner5 },
     { id: "6", image: banner6 },
+    { id: "7", image: banner7 },
   ];
 
   // ------------------------------------------
@@ -74,6 +76,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* --------------------------------------------- */}
         <View style={styles.header}>
           <View>
+            <Image source={logo} style={styles.logo} />
             <Text style={styles.welcome}>
               Welcome {user?.name || "Guest"}
             </Text>
@@ -85,7 +88,7 @@ export default function HomeScreen({ navigation }: any) {
 
           {/* LOGO + PROFILE ICON */}
           <View style={styles.rightHeader}>
-            <Image source={logo} style={styles.logo} />
+            
 
             <TouchableOpacity onPress={() => navigation.navigate("MyProfile")}>
               <Image
@@ -100,36 +103,31 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* LOGOUT BUTTON */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        
 
         {/* -------------------------------- */}
         {/* 🔵 SERVICE BANNERS WITH IMAGES */}
         {/* -------------------------------- */}
-        <ServiceBannerSection banners={banners} onPressBanner={undefined} />
+        <ServiceBannerSection 
+          banners={banners}
+          onPressBanner={(banner) => navigation.navigate("Services", { banner })}
+        />
+
 
         {/* -------------------------------- */}
         {/* 🟣 EXCLUSIVE OFFERS WITH IMAGES */}
         {/* -------------------------------- */}
-        <ExclusiveOffersSection offers={offers} />
+        <ExclusiveOffersSection offers={offers} onPressOffer={undefined} />
 
         {/* -------------------------------- */}
         {/* 🟡 TESTIMONIALS (TEXT ONLY) */}
         {/* -------------------------------- */}
         <TestimonialsSection testimonials={testimonials} />
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: 220 }} />
       </ScrollView>
 
-      {/* ❤️ HELP BUTTON */}
-      <TouchableOpacity
-        style={styles.helpButton}
-        onPress={() => navigation.navigate("Help")}
-      >
-        <Text style={styles.helpButtonText}>Need Help?</Text>
-      </TouchableOpacity>
+    
     </View>
   );
 }
@@ -140,7 +138,7 @@ export default function HomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B1220",
+    backgroundColor: "#0b2557ff",
   },
 
   scrollContent: {
@@ -156,7 +154,7 @@ const styles = StyleSheet.create({
   },
 
   welcome: {
-    color: "#fff",
+    color: "#f3680bff",
     fontSize: 18,
     fontWeight: "600",
   },
@@ -164,7 +162,7 @@ const styles = StyleSheet.create({
   company: {
     color: "#9CA3AF",
     fontSize: 14,
-    marginTop: 2,
+    marginTop: 8,
   },
 
   location: {
@@ -180,8 +178,8 @@ const styles = StyleSheet.create({
   },
 
   logo: {
-    width: 55,
-    height: 55,
+    width: 85,
+    height: 85,
     resizeMode: "contain",
   },
 
@@ -193,38 +191,6 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
   },
 
-  logoutBtn: {
-    alignSelf: "flex-end",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
 
-  logoutText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-
-  helpButton: {
-    position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
-    backgroundColor: "#06B6D4",
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    shadowColor: "#06B6D4",
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-
-  helpButtonText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 16,
-  },
+  
 });
