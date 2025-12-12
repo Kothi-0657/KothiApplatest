@@ -32,6 +32,10 @@ import ProfileBookings from "../screens/profileBookings";
 import ProfilePayments from "../screens/profilePayments";
 import ServiceBannerSection from "../components/ServiceBannerSection";
 import TestimonialsSection from "../components/TestimonialSections";
+import HomeConstructionSection from "../components/HomeConstructionSection";
+import PaintingScroll from "../components/paintingScroll";
+import PaintingCalculator from "../screens/PaintingCalculator";
+
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -216,8 +220,19 @@ export default function AppNavigator() {
             <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
             <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
             <Stack.Screen name="PaymentFailed" component={PaymentFailedScreen} />
-              <Stack.Screen name="Service Banners" component={ServiceBannerSection} />
+            <Stack.Screen name="Service Banners" component={ServiceBannerSection} />
             <Stack.Screen name="Exclusive Offers" component={ExclusiveOffersScreen} />
+            <Stack.Screen
+                   name="PaintingScroll"
+                   component={PaintingScroll}
+                   options={{
+                  headerShown: true,
+                  headerStyle: { backgroundColor: "#000" },
+                  headerTintColor: "#FFD700",
+                  title: "Painting Services",
+             }}
+              />
+            <Stack.Screen name="Home constructions" component={HomeConstructionSection} />
             <Stack.Screen name="Testimonials" component={TestimonialsSection} />
 
             <Stack.Screen
@@ -237,6 +252,11 @@ export default function AppNavigator() {
                 title: "Service Detail",
               }}
             />
+            <Stack.Screen
+  name="PaintingCalculator"
+  component={PaintingCalculator}
+  options={{ title: "Painting Calculator" }}
+/>
 
             {/* Profile Subscreens */}
             <Stack.Screen name="Bookings" component={ProfileBookings} />

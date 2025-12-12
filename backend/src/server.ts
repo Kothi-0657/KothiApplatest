@@ -14,7 +14,7 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import publicServicesRoutes from "./routes/publicServicesRoutes";
 import customerBookingRoutes from "./routes/customerBookingRoutes";
 import { getBookingsByCustomer } from "./controllers/customerBookingController";
-
+import paintingRoutes from "./routes/paintingRoutes";
 
 import authRoutes from "./routes/authRoutes";
 import pool from "./config/db";
@@ -48,7 +48,9 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/customers", customersRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/vendors", vendorRoutes);
-app.use("/api/customer", customerBookingRoutes);
+app.use("/api/customer/booking", customerBookingRoutes);
+app.use("/api/painting", paintingRoutes);
+
 // Start Server
 const port = Number(process.env.PORT || 4000);
 app.listen(port, "0.0.0.0", () => {

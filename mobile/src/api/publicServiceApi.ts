@@ -16,21 +16,31 @@ export const fetchPublicServiceById = async (id: string) => {
   return { data: res.data.service || null };
 };
 
-export const fetchUserBookings = async (customerId: string) => {
+
+/** User Bookings */
+export const getBookingsByCustomer = async (customerId: string) => {
   const res = await api.get(`/api/customer/${customerId}`);
   return res.data.bookings || [];
 };
 
-export const fetchUserPayments = async (customerId: string) => {
-  const res = await api.get(`/api/payments/my/${customerId}`);
-  return res.data.payments || [];
-};
 
-export const fetchBookingDetails = async (bookingId: string) => {
+export const getSingleBooking = async (bookingId: string) => {
   const res = await api.get(`/api/booking/${bookingId}`);
   return res.data.booking || null;
 };
-export const fetchPaymentStatus = async (bookingId: string) => {
-  const res = await api.get(`/api/payment/status/${bookingId}`);
-  return res.data.payment || null;
+
+
+/** User Payments */
+export const fetchUserPayments = async (userId: string) => {
+  const res = await api.get(`/api/payments/user/${userId}`);
+  return res.data.payments || [];
 };
+
+
+export const fetchPaintTypes = async (surface: string, mode: string) => {
+  const res = await api.get(`/api/painting/persqft`, {
+    params: { surface, mode }
+  });
+  return res.data.data;
+};
+

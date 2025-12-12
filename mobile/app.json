@@ -7,5 +7,7 @@
   },
   "plugins": [
     "expo-secure-store"
+  
   ]
+    
 }

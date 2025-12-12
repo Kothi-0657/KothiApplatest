@@ -1,5 +1,8 @@
 // src/screens/HomeScreen.tsx
-import React from "react";
+
+import React, { useEffect, useState } from "react";
+import Separator from "../components/seperator";
+
 import {
   View,
   ScrollView,
@@ -8,6 +11,7 @@ import {
   Text,
   Image,
 } from "react-native";
+import * as Location from "expo-location";
 
 import { useAuth } from "../context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,7 +20,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ExclusiveOffersSection from "../components/ExclusiveOfferSection";
 import TestimonialsSection from "../components/TestimonialSections";
 import ServiceBannerSection from "../components/ServiceBannerSection";
-
+import HomeConstructionSection from "../components/HomeConstructionSection";
+import PaintingScroll from "../components/paintingScroll";
 // Images
 import logo from "../assets/logoa1.gif";
 import profilePlaceholder from "../assets/profilepicplaceholder.png";
@@ -33,6 +38,9 @@ import banner7 from "../assets/banners/carb.png";
 // 🟣 LOCAL OFFERS (Add your assets)
 import offer1 from "../assets/offers/cleano.mp4";
 import offer2 from "../assets/offers/painoffer.mp4";
+import ScrollingCities from "../components/ScrollingCities";
+import { route } from "../navigation/AppNavigator";
+
 
 // 🟡 TESTIMONIALS (Simple text list)
 const testimonials = [
@@ -43,6 +51,46 @@ const testimonials = [
 
 export default function HomeScreen({ navigation }: any) {
   const { user, logout } = useAuth();
+
+    const [currentLocation, setCurrentLocation] = useState<string>("Fetching location...");
+
+  // If coming from MapPickerScreen
+  const selectedLocation = route?.params?.selectedLocation;
+
+  // ----------------------------------------
+  // Fetch live location on mount
+  // ----------------------------------------
+  useEffect(() => {
+    if (selectedLocation) {
+      setCurrentLocation(selectedLocation);
+      return;
+    }
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setCurrentLocation("Permission denied");
+          return;
+        }
+
+        const loc = await Location.getCurrentPositionAsync({});
+        const [place] = await Location.reverseGeocodeAsync({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        });
+
+        if (place) {
+          const formatted = `${place.name || ""}, ${place.city || place.region || ""}`;
+          setCurrentLocation(formatted);
+        } else {
+          setCurrentLocation("Unknown location");
+        }
+      } catch (err) {
+        console.log("Error fetching location:", err);
+        setCurrentLocation("Location unavailable");
+      }
+    })();
+  }, [selectedLocation]);
 
   // ----------------------------------------
   // 🔵 HARD-CODED BANNERS UNTIL API IS READY
@@ -61,9 +109,68 @@ export default function HomeScreen({ navigation }: any) {
   // 🟣 HARD-CODED EXCLUSIVE OFFERS (No API yet)
   // ------------------------------------------
   const offers = [
-    { id: "1", title: "50% Off Painting", image: offer1 },
-    { id: "2", title: "Flat ₹999 Deep Cleaning", image: offer2 },
+    { id: "1", title: "Flat ₹999 Deep Cleaning", image: offer1 },
+    { id: "2", title: "50% OFF on Interior painting", image: offer2 },
   ];
+
+// ----------------------------------------
+  // 🔵 HARD-CODED home constructions  UNTIL API IS READY
+  // ----------------------------------------
+
+  const constructionData = [
+  {
+    id: "1",
+    title: "Full House Construction",
+    image: require("../assets/construction/el1.png"),
+  },
+  {
+    id: "2",
+    title: "Front elevantion Design",
+    image: require("../assets/construction/el2.png"),
+  },
+  {
+    id: "3",
+    title: "Front elevation Design 2",
+    image: require("../assets/construction/el3.png"),
+  },
+  {
+    id: "4",
+    title: "Front elevation Design 3",
+    image: require("../assets/construction/el4.png"),
+  },
+  {
+    id: "5",
+    title: "Front elevation Design 4",
+    image: require("../assets/construction/el5.png"),
+  },
+  {
+    id: "6",
+    title: "Front elevation Design",
+    image: require("../assets/construction/el6.png"),
+  },
+  {
+    id: "7",
+    title: "Front elevation Design",
+    image: require("../assets/construction/el7.png"),
+  },
+  {
+    id: "8",
+    title: "Front elevation Design",
+    image: require("../assets/construction/el8.png"),
+  },
+  {
+    id: "9",
+    title: "Front elevation Design",
+    image: require("../assets/construction/el9.png"),
+  },
+  {
+    id: "10",
+    title: "Front elevation Design",
+    image: require("../assets/construction/el10.png"),
+  },
+];
+
+
 
   return (
     <View style={styles.container}>
@@ -82,14 +189,19 @@ export default function HomeScreen({ navigation }: any) {
             </Text>
             <Text style={styles.company}>Kothi India Private Limited</Text>
             <Text style={styles.location}>
-              📍 {user?.location || "Your Location"}
+              📍 {currentLocation}
             </Text>
+            <View style={{ flexDirection: "row", alignItems: "bottom", marginTop: 18 }}>
+                
+                <Text style={{ fontSize: 10, color: "#0d8e1cff", marginRight: 8 }}>
+                  Servicable Location:
+                </Text>
+                <ScrollingCities />   {/* ⬅ auto-scrolling city names */}
+              </View>
           </View>
-
           {/* LOGO + PROFILE ICON */}
           <View style={styles.rightHeader}>
             
-
             <TouchableOpacity onPress={() => navigation.navigate("MyProfile")}>
               <Image
                 source={
@@ -103,8 +215,8 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
-        
-
+  <Separator thickness={3} color="#050000ff" marginVertical={0} />
+              
         {/* -------------------------------- */}
         {/* 🔵 SERVICE BANNERS WITH IMAGES */}
         {/* -------------------------------- */}
@@ -113,11 +225,33 @@ export default function HomeScreen({ navigation }: any) {
           onPressBanner={(banner) => navigation.navigate("Services", { banner })}
         />
 
+  <Separator thickness={2} color="#0b051eff" marginVertical={2} />
 
         {/* -------------------------------- */}
         {/* 🟣 EXCLUSIVE OFFERS WITH IMAGES */}
         {/* -------------------------------- */}
         <ExclusiveOffersSection offers={offers} onPressOffer={undefined} />
+
+  <Separator thickness={2} color="#0b051eff" marginVertical={10} />
+
+        <HomeConstructionSection constructions={constructionData} onPressConstruction={undefined} />
+
+  <Separator thickness={2} color="#0b051eff" marginVertical={2} />
+
+        <PaintingScroll navigation={navigation} />
+
+  <Separator thickness={2} color="#0b051eff" marginVertical={2} />
+
+                  <TouchableOpacity 
+  onPress={() => navigation.navigate("PaintingCalculator")}
+  style={styles.welcome}
+>
+  <Image source={require("../assets/cal.png")} style={styles.logo} />
+  <Text style={styles.welcome}>Painting Calculator</Text>
+</TouchableOpacity>
+
+  <Separator thickness={2} color="#020105ff" marginVertical={10} />
+
 
         {/* -------------------------------- */}
         {/* 🟡 TESTIMONIALS (TEXT ONLY) */}
@@ -174,7 +308,7 @@ const styles = StyleSheet.create({
   rightHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 2,
   },
 
   logo: {
@@ -186,11 +320,11 @@ const styles = StyleSheet.create({
   profilePic: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: "#fff",
+    gap: 20
   },
-
 
   
 });

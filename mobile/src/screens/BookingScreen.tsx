@@ -195,7 +195,7 @@ export default function BookingScreen() {
         {loadingBookings ? (
           <ActivityIndicator color="#06B6D4" />
         ) : myBookings.length === 0 ? (
-          <Text style={{ color: "#fff", fontSize: 14, marginTop: 8 }}>No bookings found.</Text>
+          <Text style={{ color: "#0f0303ff", fontSize: 14, marginTop: 8 }}>No bookings found.</Text>
         ) : (
           myBookings.map((b) => (
             <View key={b.id} style={bookingStyles.bookingCard}>
@@ -216,7 +216,7 @@ export default function BookingScreen() {
 // ------------------- Styles -------------------
 const bookingStyles = StyleSheet.create({
   container: { padding: 20, backgroundColor: "#071029" },
-  heading: { color: "#fff", fontSize: 22, fontWeight: "800", marginBottom: 12 },
+  heading: { color: "#0a0101ff", fontSize: 22, fontWeight: "800", marginBottom: 12 },
 
   card: {
     backgroundColor: "#0B1220",

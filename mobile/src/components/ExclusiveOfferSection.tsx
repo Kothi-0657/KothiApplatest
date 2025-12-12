@@ -1,12 +1,21 @@
 import React from "react";
 import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 
-export default function ExclusiveOffersScreen({ offers = [], onPressOffer }) {
+export default function ExclusiveOfferSection({ offers = [], onPressOffer }) {
   if (!offers.length) return null;
 
   return (
     <View style={{ marginTop: 20 }}>
-      <Text style={styles.title}>Exclusive Offers</Text>
+
+      {/* Heading + Icon */}
+      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+        <Image
+          source={require("../assets/logoa2.png")}
+          style={{ width: 32, height: 32, marginLeft: 8, marginBottom: 10 }}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Exclusive Offers and Deals</Text>
+      </View>
 
       <FlatList
         data={offers}
@@ -16,8 +25,8 @@ export default function ExclusiveOffersScreen({ offers = [], onPressOffer }) {
         contentContainerStyle={{ paddingVertical: 10 }}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.card} onPress={() => onPressOffer?.(item)}>
-            <Image 
-              source={ typeof item.image === "string" ? { uri: item.image } : item.image }
+            <Image
+              source={typeof item.image === "string" ? { uri: item.image } : item.image}
               style={styles.img}
             />
             <Text style={styles.name}>{item.title}</Text>
@@ -29,7 +38,14 @@ export default function ExclusiveOffersScreen({ offers = [], onPressOffer }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: "#fff", fontSize: 18, fontWeight: "700", marginBottom: 10, marginLeft: 5 },
+  title: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 10,
+    marginLeft: 5,
+  },
+
   card: {
     width: 200,
     backgroundColor: "#111827",
@@ -37,6 +53,16 @@ const styles = StyleSheet.create({
     padding: 10,
     marginRight: 12,
   },
-  img: { width: "100%", height: 100, borderRadius: 10 },
-  name: { color: "#fff", marginTop: 8, fontWeight: "600" },
+
+  img: {
+    width: "100%",
+    height: 100,
+    borderRadius: 10,
+  },
+
+  name: {
+    color: "#fff",
+    marginTop: 8,
+    fontWeight: "600",
+  },
 });

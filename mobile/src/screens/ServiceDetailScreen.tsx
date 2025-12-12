@@ -1,192 +1,184 @@
-// src/screens/ServiceDetailScreen.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Image,
-  TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
+import api from "../api/api";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation, RouteProp } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-type RootStackParamList = {
-  ServiceDetail: { srv: any };
-  MapPicker: { selectedService: any };
-};
+export default function BookingDetailScreen({ route, navigation }: any) {
+  const { bookingId } = route.params;
+  const [booking, setBooking] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-type ServiceDetailNavigation = NativeStackNavigationProp<
-  RootStackParamList,
-  "ServiceDetail"
->;
+  const loadBooking = async () => {
+    try {
+      const res = await api.get(`/customer/bookings/single/${bookingId}`);
+      setBooking(res.data.booking);
+    } catch (err) {
+      console.log("❌ Error loading booking:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-type ServiceDetailRoute = RouteProp<RootStackParamList, "ServiceDetail">;
+  useEffect(() => {
+    loadBooking();
+  }, []);
 
-export default function ServiceDetailScreen({
-  route,
-}: {
-  route: ServiceDetailRoute;
-}) {
-  const navigation = useNavigation<ServiceDetailNavigation>();
-  const { srv } = route.params || {};
-
-  // If no data received — avoid crash
-  if (!srv) {
+  if (loading) {
     return (
-      <View style={styles.centered}>
-        <Text style={{ color: "#fff" }}>Service not found.</Text>
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#FFD700" />
       </View>
     );
   }
 
-  // Safe fields with fallback values
-  const serviceImage =
-    srv.image ||
-    srv.photo ||
-    "https://via.placeholder.com/600x400.png?text=Service+Image";
+  if (!booking) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "#fff" }}>Booking details not available.</Text>
+      </View>
+    );
+  }
 
-  const serviceName = srv.name ?? "Unnamed Service";
-  const serviceDesc =
-    srv.description ?? "No description available for this service.";
-  const servicePrice = srv.price ?? "499";
-  const serviceRating = srv.rating ?? "4.8";
-  const serviceReviews = srv.reviews ?? "120";
-
-  const handleBookNow = () => {
-    // Navigate to booking or map picker
-    navigation.navigate("MapPicker", { selectedService: srv });
-  };
+  // Safe nested data
+  const service = booking.service || {};
+  const vendor = booking.vendor || {};
+  const customer = booking.customer || {};
+  const address = booking.address || {};
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header Image */}
-      <Image source={{ uri: serviceImage }} style={styles.image} />
+      <Text style={styles.header}>Booking Details</Text>
 
-      {/* Gradient Overlay */}
-      <LinearGradient
-        colors={["rgba(0,0,0,0.5)", "transparent"]}
-        style={styles.overlay}
-      />
+      {/* Booking Info Card */}
+      <View style={styles.card}>
+        <Text style={styles.label}>Booking Reference</Text>
+        <Text style={styles.value}>{booking.booking_ref}</Text>
 
-      {/* Content */}
-      <View style={styles.infoCard}>
-        <Text style={styles.title}>{serviceName}</Text>
+        <Text style={styles.label}>Status</Text>
+        <Text style={[styles.value, { color: "#0ad" }]}>{booking.status}</Text>
 
-        <View style={styles.ratingRow}>
-          <Ionicons name="star" color="#FFD700" size={18} />
-          <Text style={styles.ratingText}>
-            {serviceRating} ★ | {serviceReviews} reviews
-          </Text>
-        </View>
+        <Text style={styles.label}>Service</Text>
+        <Text style={styles.value}>{service.name || "N/A"}</Text>
 
-        <Text style={styles.desc}>{serviceDesc}</Text>
+        <Text style={styles.label}>Price</Text>
+        <Text style={styles.value}>₹{booking.price}</Text>
 
-        <View style={styles.priceRow}>
-          <Text style={styles.priceLabel}>Starting at</Text>
-          <Text style={styles.priceValue}>₹{servicePrice}</Text>
-        </View>
+        <Text style={styles.label}>Scheduled At</Text>
+        <Text style={styles.value}>
+          {new Date(booking.scheduled_at).toLocaleString()}
+        </Text>
 
-        {/* Book Now Button */}
-        <TouchableOpacity style={styles.bookBtn} onPress={handleBookNow}>
-          <LinearGradient
-            colors={["#d4af37", "#c6a664"]}
-            style={styles.bookGradient}
-          >
-            <Ionicons name="calendar-outline" size={20} color="#fff" />
-            <Text style={styles.bookText}>Book Now</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <Text style={styles.label}>Booked At</Text>
+        <Text style={styles.value}>
+          {new Date(booking.booked_at).toLocaleString()}
+        </Text>
+
+        {booking.notes && (
+          <>
+            <Text style={styles.label}>Notes</Text>
+            <Text style={styles.value}>{booking.notes}</Text>
+          </>
+        )}
       </View>
+
+      {/* Address Info */}
+      <View style={styles.card}>
+        <Text style={styles.subHeader}>Address</Text>
+        <Text style={styles.value}>{address.flat_no}</Text>
+        <Text style={styles.value}>{address.street}</Text>
+        <Text style={styles.value}>{address.landmark}</Text>
+        <Text style={styles.value}>
+          {address.city} - {address.pincode}
+        </Text>
+      </View>
+
+      {/* Vendor Info */}
+      <View style={styles.card}>
+        <Text style={styles.subHeader}>Vendor Assigned</Text>
+
+        {vendor?.name ? (
+          <>
+            <Text style={styles.value}>{vendor.name}</Text>
+            <Text style={styles.value}>{vendor.phone}</Text>
+            <Text style={styles.value}>{vendor.email}</Text>
+          </>
+        ) : (
+          <Text style={styles.value}>No vendor assigned yet</Text>
+        )}
+      </View>
+
+      {/* Payment Summary */}
+      <View style={styles.card}>
+        <Text style={styles.subHeader}>Payment Summary</Text>
+
+        {booking.payments?.length > 0 ? (
+          booking.payments.map((p: any, index: number) => (
+            <View key={index} style={{ marginBottom: 8 }}>
+              <Text style={styles.value}>Status: {p.status}</Text>
+              <Text style={styles.value}>Amount: ₹{p.amount}</Text>
+              <Text style={styles.value}>
+                Updated: {new Date(p.updated_at).toLocaleString()}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.value}>No payments yet</Text>
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={20} color="#fff" />
+        <Text style={styles.backText}>Back to Bookings</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
-/* ============================
+/* --------------------------
    STYLE SHEET
-=============================== */
+--------------------------- */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
-  centered: {
-    flex: 1,
-    backgroundColor: "#000",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  image: {
-    width: "100%",
-    height: 260,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-  },
-  infoCard: {
-    padding: 20,
-  },
-  title: {
+  container: { flex: 1, padding: 14, backgroundColor: "#000" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  header: {
     color: "#FFD700",
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
-    marginBottom: 10,
+    marginVertical: 10,
   },
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+  card: {
+    backgroundColor: "#1b1c1f",
+    padding: 14,
+    borderRadius: 10,
+    marginVertical: 10,
   },
-  ratingText: {
-    color: "#ccc",
-    marginLeft: 6,
-    fontSize: 14,
-  },
-  desc: {
-    color: "#eee",
-    fontSize: 16,
-    lineHeight: 22,
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  priceLabel: {
-    color: "#999",
-    fontSize: 15,
-  },
-  priceValue: {
+  label: { color: "#999", marginTop: 10, fontSize: 13 },
+  value: { color: "#fff", fontSize: 16, marginTop: 2 },
+
+  subHeader: {
     color: "#FFD700",
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  bookBtn: {
-    borderRadius: 30,
-    overflow: "hidden",
-  },
-  bookGradient: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderRadius: 30,
-  },
-  bookText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
-    marginLeft: 8,
+    marginBottom: 10,
   },
+  backBtn: {
+    marginTop: 20,
+    flexDirection: "row",
+    alignSelf: "center",
+    backgroundColor: "#333",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  backText: { color: "#fff", marginLeft: 8, fontSize: 16 },
 });

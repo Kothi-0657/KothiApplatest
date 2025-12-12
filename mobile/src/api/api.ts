@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-
+//const API_URL = "http://192.168.1.12:4000";
 const API_URL = "http://localhost:4000"; // change when deploying
 
 const api = axios.create({

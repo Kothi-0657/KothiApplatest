@@ -10,6 +10,7 @@ import {
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
+import { Platform } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
