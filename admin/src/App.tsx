@@ -9,6 +9,7 @@ import Payments from "./pages/Payments";
 import Vendors from "./pages/vendors";
 import Bookings from "./pages/Bookings";
 import LoginPage from "./pages/LoginPage";
+import PaintingList from "./pages/PaintingList";
 
 export default function App() {
   const isAuthenticated = !!localStorage.getItem("admin_token");
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="payments" element={<Payments />} />
             <Route path="vendors" element={<Vendors />} />
             <Route path="bookings" element={<Bookings />} />
+            <Route path="paintinglist" element={<PaintingList />} />
           </Route>
         ) : (
           <Route path="*" element={<Navigate to="/login" replace />} />

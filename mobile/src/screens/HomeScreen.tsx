@@ -1,5 +1,4 @@
 // src/screens/HomeScreen.tsx
-
 import React, { useEffect, useState } from "react";
 import Separator from "../components/seperator";
 
@@ -22,11 +21,13 @@ import TestimonialsSection from "../components/TestimonialSections";
 import ServiceBannerSection from "../components/ServiceBannerSection";
 import HomeConstructionSection from "../components/HomeConstructionSection";
 import PaintingScroll from "../components/paintingScroll";
+import ScrollingCities from "../components/ScrollingCities";
+
 // Images
-import logo from "../assets/logoa1.gif";
+import logo from "../assets/logoa2.png";
 import profilePlaceholder from "../assets/profilepicplaceholder.png";
 
-// 🔵 LOCAL BANNERS (Add your assets)
+// Service banners
 import banner1 from "../assets/banners/painb.png";
 import banner2 from "../assets/banners/cleab.png";
 import banner3 from "../assets/banners/conb.png";
@@ -35,14 +36,15 @@ import banner5 from "../assets/banners/inteb.png";
 import banner6 from "../assets/banners/plumb.png";
 import banner7 from "../assets/banners/carb.png";
 
-// 🟣 LOCAL OFFERS (Add your assets)
+// Offers
 import offer1 from "../assets/offers/cleano.mp4";
 import offer2 from "../assets/offers/painoffer.mp4";
-import ScrollingCities from "../components/ScrollingCities";
+
+// Calculator icon
+import calIcon from "../assets/cal.png";
+
 import { route } from "../navigation/AppNavigator";
 
-
-// 🟡 TESTIMONIALS (Simple text list)
 const testimonials = [
   { id: "1", text: "Great service! Highly recommended." },
   { id: "2", text: "Very professional and fast." },
@@ -50,16 +52,11 @@ const testimonials = [
 ];
 
 export default function HomeScreen({ navigation }: any) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const [currentLocation, setCurrentLocation] = useState<string>("Fetching location...");
 
-    const [currentLocation, setCurrentLocation] = useState<string>("Fetching location...");
-
-  // If coming from MapPickerScreen
   const selectedLocation = route?.params?.selectedLocation;
 
-  // ----------------------------------------
-  // Fetch live location on mount
-  // ----------------------------------------
   useEffect(() => {
     if (selectedLocation) {
       setCurrentLocation(selectedLocation);
@@ -92,9 +89,9 @@ export default function HomeScreen({ navigation }: any) {
     })();
   }, [selectedLocation]);
 
-  // ----------------------------------------
-  // 🔵 HARD-CODED BANNERS UNTIL API IS READY
-  // ----------------------------------------
+  // ------------------------------
+  // Banners
+  // ------------------------------
   const banners = [
     { id: "1", image: banner1 },
     { id: "2", image: banner2 },
@@ -105,226 +102,185 @@ export default function HomeScreen({ navigation }: any) {
     { id: "7", image: banner7 },
   ];
 
-  // ------------------------------------------
-  // 🟣 HARD-CODED EXCLUSIVE OFFERS (No API yet)
-  // ------------------------------------------
+  // ------------------------------
+  // Offers
+  // ------------------------------
   const offers = [
     { id: "1", title: "Flat ₹999 Deep Cleaning", image: offer1 },
     { id: "2", title: "50% OFF on Interior painting", image: offer2 },
   ];
 
-// ----------------------------------------
-  // 🔵 HARD-CODED home constructions  UNTIL API IS READY
-  // ----------------------------------------
-
+  // ------------------------------
+  // Constructions (static imports)
+  // ------------------------------
   const constructionData = [
-  {
-    id: "1",
-    title: "Full House Construction",
-    image: require("../assets/construction/el1.png"),
-  },
-  {
-    id: "2",
-    title: "Front elevantion Design",
-    image: require("../assets/construction/el2.png"),
-  },
-  {
-    id: "3",
-    title: "Front elevation Design 2",
-    image: require("../assets/construction/el3.png"),
-  },
-  {
-    id: "4",
-    title: "Front elevation Design 3",
-    image: require("../assets/construction/el4.png"),
-  },
-  {
-    id: "5",
-    title: "Front elevation Design 4",
-    image: require("../assets/construction/el5.png"),
-  },
-  {
-    id: "6",
-    title: "Front elevation Design",
-    image: require("../assets/construction/el6.png"),
-  },
-  {
-    id: "7",
-    title: "Front elevation Design",
-    image: require("../assets/construction/el7.png"),
-  },
-  {
-    id: "8",
-    title: "Front elevation Design",
-    image: require("../assets/construction/el8.png"),
-  },
-  {
-    id: "9",
-    title: "Front elevation Design",
-    image: require("../assets/construction/el9.png"),
-  },
-  {
-    id: "10",
-    title: "Front elevation Design",
-    image: require("../assets/construction/el10.png"),
-  },
-];
-
-
+    { id: "1", title: "Full House Construction", image: require("../assets/construction/el1.png") },
+    { id: "2", title: "Front elevation Design", image: require("../assets/construction/el2.png") },
+    { id: "3", title: "Front elevation Design 2", image: require("../assets/construction/el3.png") },
+    { id: "4", title: "Front elevation Design 3", image: require("../assets/construction/el4.png") },
+    { id: "5", title: "Front elevation Design 4", image: require("../assets/construction/el5.png") },
+    { id: "6", title: "Front elevation Design", image: require("../assets/construction/el6.png") },
+    { id: "7", title: "Front elevation Design", image: require("../assets/construction/el7.png") },
+    { id: "8", title: "Front elevation Design", image: require("../assets/construction/el8.png") },
+    { id: "9", title: "Front elevation Design", image: require("../assets/construction/el9.png") },
+    { id: "10", title: "Front elevation Design", image: require("../assets/construction/el10.png") },
+  ];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* --------------------------------------------- */}
-        {/* 🔵 HEADER WITH LOGO | LOCATION | PROFILE ICON */}
-        {/* --------------------------------------------- */}
+        {/* HEADER */}
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerLeft}>
             <Image source={logo} style={styles.logo} />
-            <Text style={styles.welcome}>
-              Welcome {user?.name || "Guest"}
-            </Text>
-            <Text style={styles.company}>Kothi India Private Limited</Text>
-            <Text style={styles.location}>
-              📍 {currentLocation}
-            </Text>
-            <View style={{ flexDirection: "row", alignItems: "bottom", marginTop: 18 }}>
-                
-                <Text style={{ fontSize: 10, color: "#0d8e1cff", marginRight: 8 }}>
-                  Servicable Location:
-                </Text>
-                <ScrollingCities />   {/* ⬅ auto-scrolling city names */}
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.welcome}>Welcome {user?.name || "Guest"}</Text>
+              <Text style={styles.company}>Kothi India Private Limited</Text>
+              <Text style={styles.location}>📍 {currentLocation}</Text>
+              <View style={styles.servicableContainer}>
+                <Text style={styles.servicableText}>Servicable Location:</Text>
+                <ScrollingCities />
               </View>
+            </View>
           </View>
-          {/* LOGO + PROFILE ICON */}
-          <View style={styles.rightHeader}>
-            
-            <TouchableOpacity onPress={() => navigation.navigate("MyProfile")}>
-              <Image
-                source={
-                  user?.profileImage
-                    ? { uri: user.profileImage }
-                    : profilePlaceholder
-                }
-                style={styles.profilePic}
-              />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={() => navigation.navigate("MyProfile")}>
+            <Image
+              source={user?.profileImage ? { uri: user.profileImage } : profilePlaceholder}
+              style={styles.profilePic}
+            />
+          </TouchableOpacity>
         </View>
 
-  <Separator thickness={3} color="#050000ff" marginVertical={0} />
-              
-        {/* -------------------------------- */}
-        {/* 🔵 SERVICE BANNERS WITH IMAGES */}
-        {/* -------------------------------- */}
+        <Separator thickness={3} color="#050000ff" marginVertical={10} />
+
+        {/* SERVICE BANNERS */}
         <ServiceBannerSection 
           banners={banners}
           onPressBanner={(banner) => navigation.navigate("Services", { banner })}
         />
 
-  <Separator thickness={2} color="#0b051eff" marginVertical={2} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
 
-        {/* -------------------------------- */}
-        {/* 🟣 EXCLUSIVE OFFERS WITH IMAGES */}
-        {/* -------------------------------- */}
+        {/* EXCLUSIVE OFFERS */}
         <ExclusiveOffersSection offers={offers} onPressOffer={undefined} />
 
-  <Separator thickness={2} color="#0b051eff" marginVertical={10} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
 
+        {/* HOME CONSTRUCTIONS */}
         <HomeConstructionSection constructions={constructionData} onPressConstruction={undefined} />
 
-  <Separator thickness={2} color="#0b051eff" marginVertical={2} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
 
+        {/* PAINTING SCROLL */}
         <PaintingScroll navigation={navigation} />
 
-  <Separator thickness={2} color="#0b051eff" marginVertical={2} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
 
-                  <TouchableOpacity 
-  onPress={() => navigation.navigate("PaintingCalculator")}
-  style={styles.welcome}
->
-  <Image source={require("../assets/cal.png")} style={styles.logo} />
-  <Text style={styles.welcome}>Painting Calculator</Text>
-</TouchableOpacity>
+        {/* PAINTING CALCULATOR */}
+        <TouchableOpacity 
+          onPress={() => navigation.navigate("PaintingCalculator")}
+          style={styles.calculatorContainer}
+        >
+          <Image source={calIcon} style={styles.calIcon} />
+          <Text style={styles.calculatorText}>Painting Calculator</Text>
+        </TouchableOpacity>
 
-  <Separator thickness={2} color="#020105ff" marginVertical={10} />
+        <Separator thickness={2} color="#020105ff" marginVertical={10} />
 
-
-        {/* -------------------------------- */}
-        {/* 🟡 TESTIMONIALS (TEXT ONLY) */}
-        {/* -------------------------------- */}
+        {/* TESTIMONIALS */}
         <TestimonialsSection testimonials={testimonials} />
 
         <View style={{ height: 220 }} />
       </ScrollView>
-
-    
-    </View>
+    </SafeAreaView>
   );
 }
 
-/* ------------------------------- */
-/* ✨ STYLES                       */
-/* ------------------------------- */
+// -------------------------------
+// STYLES
+// -------------------------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0b2557ff",
   },
-
   scrollContent: {
     padding: 16,
     paddingBottom: 150,
   },
-
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
   },
-
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    flex: 1,
+  },
+  headerTextContainer: {
+    marginLeft: 12,
+    flexShrink: 1,
+  },
+  logo: {
+    width: 70,
+    height: 70,
+    resizeMode: "contain",
+  },
   welcome: {
     color: "#f3680bff",
     fontSize: 18,
     fontWeight: "600",
   },
-
   company: {
     color: "#9CA3AF",
     fontSize: 14,
-    marginTop: 8,
+    marginTop: 2,
   },
-
   location: {
     color: "#06B6D4",
     fontSize: 14,
-    marginTop: 6,
+    marginTop: 2,
   },
-
-  rightHeader: {
+  servicableContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
+    marginTop: 8,
+    flexWrap: "wrap",
   },
-
-  logo: {
-    width: 85,
-    height: 85,
-    resizeMode: "contain",
+  servicableText: {
+    fontSize: 10,
+    color: "#0d8e1cff",
+    marginRight: 6,
   },
-
   profilePic: {
     width: 48,
     height: 48,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#fff",
-    gap: 20
   },
-
-  
+  calculatorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#0b2557ff",
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+  calIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
+    marginRight: 12,
+  },
+  calculatorText: {
+    color: "#f3680bff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });

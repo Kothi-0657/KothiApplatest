@@ -9,6 +9,7 @@ const menu = [
   { to: "/payments", label: "Payments" },
   { to: "/vendors", label: "Vendors" },
   { to: "/bookings", label: "Bookings" },
+  { to: "/paintinglist", label: "Painting Rates" },
 ];
 
 export default function AdminLayout() {

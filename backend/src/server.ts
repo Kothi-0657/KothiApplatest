@@ -1,6 +1,7 @@
 // src/server.ts
+import "dotenv/config"; // 🔥 LOAD ENV FIRST
+
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 
 import adminRoutes from "./routes/adminRoutes";
@@ -13,14 +14,12 @@ import adminAuthRoutes from "./routes/adminAuthRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import publicServicesRoutes from "./routes/publicServicesRoutes";
 import customerBookingRoutes from "./routes/customerBookingRoutes";
-import { getBookingsByCustomer } from "./controllers/customerBookingController";
 import paintingRoutes from "./routes/paintingRoutes";
-
 import authRoutes from "./routes/authRoutes";
+import paintingRatesRoutes from "./routes/paintingRatesRoutes";
+
 import pool from "./config/db";
 export { pool };
-
-dotenv.config();
 
 const app = express();
 
@@ -33,13 +32,13 @@ app.use(
 );
 
 app.use(express.json());
+
+// Routes
 app.use("/api/auth", authRoutes);
-
-// Public Routes
 app.use("/api/public/services", publicServicesRoutes);
-app.get("/health", (_req, res) => res.json({ ok: true }));
+app.use("/health", (_req, res) => res.json({ ok: true }));
 
-// Admin + Protected Routes
+// Admin routes
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin/payments", paymentRoutes);
@@ -50,8 +49,8 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/vendors", vendorRoutes);
 app.use("/api/customer/booking", customerBookingRoutes);
 app.use("/api/painting", paintingRoutes);
-
-// Start Server
+app.use("/api/painting-rates", paintingRatesRoutes);
+// Start server
 const port = Number(process.env.PORT || 4000);
 app.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Server running on http://0.0.0.0:${port}`);

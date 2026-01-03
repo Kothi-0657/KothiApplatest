@@ -114,3 +114,32 @@ export const fetchDashboardStats = async () => {
 };
 
 export default adminAPI;
+// ---------------------------- AUTH ----------------------------
+export const adminLogin = async (email: string, password: string) => {
+  const res = await adminAPI.post("/api/admin/auth/login", {
+    email,
+    password,
+  });
+  return res.data;
+};
+
+export const adminRegister = async (data: any) => {
+  const res = await adminAPI.post("/api/admin/auth/register", data);
+  return res.data;
+};
+export const fetchAdminProfile = async () => {
+  const res = await adminAPI.get("/api/admin/auth/profile");
+  return res.data.admin;
+};
+export const updateAdminProfile = async (data: any) => {
+  const res = await adminAPI.put("/api/admin/auth/profile", data);
+  return res.data;
+};
+export const changeAdminPassword = async (oldPassword: string, newPassword: string) => {
+  const res = await adminAPI.put("/api/admin/auth/change-password", {
+    oldPassword,
+    newPassword,
+  });
+  return res.data;
+};  
+// ---------------------------- REPORTS ----------------------------

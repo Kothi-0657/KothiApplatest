@@ -52,8 +52,8 @@ export default function ServiceCard({ service, showBook = false, onPress }: Prop
 const styles = StyleSheet.create({
   cardWrapper: {
     marginHorizontal: 69,
-    marginBottom: 14,
-    borderRadius: 14,
+    marginBottom: 12,
+    borderRadius: 12,
     overflow: "hidden",
   },
 

@@ -1,36 +1,73 @@
-// ServiceBannerSection.tsx
+// src/components/ServiceBannerSection.tsx
 import React from "react";
-import { View, FlatList, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 
-export default function ServiceBannerSection({ banners = [], onPressBanner }) {
+export default function ServiceBannerSection({
+  banners = [],
+  onPressBanner,
+}) {
   if (!banners.length) return null;
 
   return (
-    <FlatList
-      data={banners}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={{ paddingVertical: 30 }}
-      style={{ pointerEvents: "auto" }}   // ✅ FIXED WARNING
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() => onPressBanner?.(item)}
-          style={{ pointerEvents: "auto" }}  // ✅ FIXED WARNING
-        >
-          <Image source={item.image} style={styles.banner} />
-        </TouchableOpacity>
-      )}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={banners}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item, index }) => (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => onPressBanner?.(item)}
+            style={[
+              styles.cardWrapper,
+              index === 0 && { marginLeft: 16 },
+            ]}
+          >
+            <Image source={item.image} style={styles.bannerImage} />
+          </TouchableOpacity>
+        )}
+      />
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
-  banner: {
-    width: 180,
-    height: 175,
-    borderRadius: 12,
-    marginRight: 12,
-    boxShadow: "0px 2px 4px rgba(0,0,0,0.3)", // future-safe shadow
+  container: {
+    marginTop: 6,
+    marginBottom: 8,
+  },
+
+  listContent: {
+    paddingVertical: 14,
+    paddingRight: 16,
+  },
+
+  cardWrapper: {
+    marginRight: 14,
+    borderRadius: 16,
+    backgroundColor: "#6f6863ff",
+
+    // Android shadow
+    elevation: 5,
+
+    // iOS shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+
+  bannerImage: {
+    width: 200,
+    height: 210,
+    borderRadius: 16,
+    resizeMode: "cover",
   },
 });
