@@ -7,39 +7,60 @@ export const calculatePaintingCost = async (req: Request, res: Response) => {
       doorCount = 0,
       windowCount = 0,
       ceilingRequired = false,
-      paintRate,   // price_per_sqft from selected paint type
+      coatCount = 1,
+      surface = "Wall",
+      paintRate,
     } = req.body;
 
-    if (!carpetArea || !paintRate) {
+    /* ---------- VALIDATION ---------- */
+    const carpet = Number(carpetArea);
+    const rate = Number(paintRate);
+
+    if (isNaN(carpet) || carpet <= 0 || isNaN(rate) || rate <= 0) {
       return res.status(400).json({
         success: false,
-        message: "carpetArea and paintRate are required",
+        message: "Valid carpetArea and paintRate are required",
       });
     }
 
-    const carpet = parseFloat(carpetArea);
-
-    // Standard areas
+    /* ---------- STANDARD SIZES ---------- */
     const DOOR_AREA = 6.5 * 2.5; // 16.25 sqft
     const WINDOW_AREA = 2 * 4;   // 8 sqft
 
-    // Formula
-    let paintableArea = carpet * 3.5; // wall multiplier
+    let paintableArea = 0;
 
-    paintableArea -= Number(doorCount) * DOOR_AREA;
-    paintableArea -= Number(windowCount) * WINDOW_AREA;
+    /* ---------- SURFACE CALCULATION ---------- */
+    if (surface === "Wall") {
+      // Base wall area
+      paintableArea = carpet * 3.5;
 
-    // Add ceiling area
-    if (ceilingRequired) {
-      paintableArea += carpet; // ceiling = carpet area
+      // Remove openings
+      paintableArea -= Number(doorCount) * DOOR_AREA;
+      paintableArea -= Number(windowCount) * WINDOW_AREA;
+
+      // Add ceiling if selected
+      if (ceilingRequired) {
+        paintableArea += carpet;
+      }
+
+      // Add doors/windows painting separately
+      paintableArea += Number(doorCount) * DOOR_AREA;
+      paintableArea += Number(windowCount) * WINDOW_AREA;
     }
 
-    // Painting additions
-    paintableArea += Number(doorCount) * 16.25; 
-    paintableArea += Number(windowCount) * 8;
+    if (surface === "Ceiling") {
+      // Ceiling only
+      paintableArea = carpet;
+    }
 
-    // Total cost
-    const totalCost = paintableArea * paintRate;
+    /* ---------- SAFETY ---------- */
+    if (paintableArea < 0) paintableArea = 0;
+
+    /* ---------- COATS ---------- */
+    paintableArea *= Number(coatCount);
+
+    /* ---------- COST ---------- */
+    const totalCost = paintableArea * rate;
 
     return res.json({
       success: true,
@@ -47,12 +68,11 @@ export const calculatePaintingCost = async (req: Request, res: Response) => {
       totalCost: totalCost.toFixed(2),
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Painting calculation error:", error);
     return res.status(500).json({
       success: false,
       message: "Server error",
-      error: error.message,
     });
   }
 };
