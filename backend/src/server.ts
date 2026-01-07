@@ -17,6 +17,7 @@ import customerBookingRoutes from "./routes/customerBookingRoutes";
 import paintingRoutes from "./routes/paintingRoutes";
 import authRoutes from "./routes/authRoutes";
 import paintingRatesRoutes from "./routes/paintingRatesRoutes";
+import calpaintingRotutes from "./routes/calpaintingRoutes";
 
 import pool from "./config/db";
 export { pool };
@@ -50,6 +51,7 @@ app.use("/api/vendors", vendorRoutes);
 app.use("/api/customer/booking", customerBookingRoutes);
 app.use("/api/painting", paintingRoutes);
 app.use("/api/painting-rates", paintingRatesRoutes);
+app.use("/api/calculate-painting", calpaintingRotutes);
 // Start server
 const port = Number(process.env.PORT || 4000);
 app.listen(port, "0.0.0.0", () => {

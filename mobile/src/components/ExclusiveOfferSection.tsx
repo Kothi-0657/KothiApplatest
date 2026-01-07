@@ -40,28 +40,28 @@ export default function ExclusiveOfferSection({ offers = [], onPressOffer }) {
 const styles = StyleSheet.create({
   title: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "700",
     marginBottom: 10,
-    marginLeft: 5,
+    marginLeft: 15,
   },
 
   card: {
-    width: 200,
+    width: 400,
     backgroundColor: "#111827",
     borderRadius: 12,
-    padding: 10,
+    padding: 13,
     marginRight: 12,
   },
 
   img: {
     width: "100%",
-    height: 100,
+    height: 140,
     borderRadius: 10,
   },
 
   name: {
-    color: "#fff",
+    color: "#f3851eff",
     marginTop: 8,
     fontWeight: "600",
   },

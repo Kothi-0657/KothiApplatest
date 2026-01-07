@@ -31,7 +31,7 @@ export default function PaintingScroll({ navigation }: any) {
   };
 
   return (
-    <View style={{ paddingVertical: 10 }}>
+    <View style={{ paddingVertical: 4 }}>
       
       {/* HEADING */}
       <View style={styles.headingRow}>
@@ -44,7 +44,7 @@ export default function PaintingScroll({ navigation }: any) {
         <Text style={styles.headingText}>Painting Service</Text>
 
         <Image
-          source={require("../assets/painting/p1.png")}
+          source={require("../assets/painting/p4.png")}
           style={styles.headingIcon}
           resizeMode="contain"
         />
@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
   },
 
   headingIcon: {
-    width: 60,
-    height: 60,
+    width: 90,
+    height: 70,
     marginLeft: 10,
     borderRadius: 8,
     marginRight: 10,

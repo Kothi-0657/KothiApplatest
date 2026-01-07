@@ -154,7 +154,7 @@ export default function HomeScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        <Separator thickness={3} color="#050000ff" marginVertical={10} />
+        <Separator thickness={3} color="#050000ff" marginVertical={2} />
 
         {/* SERVICE BANNERS */}
         <ServiceBannerSection 
@@ -162,22 +162,22 @@ export default function HomeScreen({ navigation }: any) {
           onPressBanner={(banner) => navigation.navigate("Services", { banner })}
         />
 
-        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={2} />
 
         {/* EXCLUSIVE OFFERS */}
         <ExclusiveOffersSection offers={offers} onPressOffer={undefined} />
 
-        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={2} />
 
         {/* HOME CONSTRUCTIONS */}
         <HomeConstructionSection constructions={constructionData} onPressConstruction={undefined} />
 
-        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={2} />
 
         {/* PAINTING SCROLL */}
         <PaintingScroll navigation={navigation} />
 
-        <Separator thickness={2} color="#0b051eff" marginVertical={10} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={2} />
 
         {/* PAINTING CALCULATOR */}
         <TouchableOpacity 
@@ -188,7 +188,7 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={styles.calculatorText}>Painting Calculator</Text>
         </TouchableOpacity>
 
-        <Separator thickness={2} color="#020105ff" marginVertical={10} />
+        <Separator thickness={2} color="#020105ff" marginVertical={2} />
 
         {/* TESTIMONIALS */}
         <TestimonialsSection testimonials={testimonials} />

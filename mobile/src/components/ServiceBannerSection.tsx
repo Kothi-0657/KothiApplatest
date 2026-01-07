@@ -40,19 +40,19 @@ export default function ServiceBannerSection({
 }
 const styles = StyleSheet.create({
   container: {
-    marginTop: 6,
+    marginTop: 2,
     marginBottom: 8,
   },
 
   listContent: {
-    paddingVertical: 14,
+    paddingVertical: 9,
     paddingRight: 16,
   },
 
   cardWrapper: {
-    marginRight: 14,
-    borderRadius: 16,
-    backgroundColor: "#6f6863ff",
+    marginRight: 20,
+    borderRadius: 18,
+    backgroundColor: "#474789ff",
 
     // Android shadow
     elevation: 5,
@@ -65,9 +65,9 @@ const styles = StyleSheet.create({
   },
 
   bannerImage: {
-    width: 200,
-    height: 210,
-    borderRadius: 16,
+    width: 130,
+    height: 140,
+    borderRadius: 19,
     resizeMode: "cover",
   },
 });
