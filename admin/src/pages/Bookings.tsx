@@ -1,33 +1,49 @@
 import React, { useEffect, useState } from "react";
-import { Table, Select, Button, Modal, Descriptions, Spin, message } from "antd";
+import {
+  Table,
+  Select,
+  Button,
+  Modal,
+  Descriptions,
+  Spin,
+  message,
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
 import adminAPI from "../api/adminAPI";
 
 const { Option } = Select;
 
 const Bookings: React.FC = () => {
   const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [detail, setDetail] = useState<any | null>(null);
-  const [detailVisible, setDetailVisible] = useState(false);
+  const [detailVisible, setDetailVisible] = useState<boolean>(false);
 
+  // ---------------- FETCH BOOKINGS ----------------
   const fetchBookings = async () => {
     setLoading(true);
     try {
       const res = await adminAPI.get("/api/bookings");
-      if (res.data.success) setBookings(res.data.bookings);
+      if (res.data?.success) {
+        setBookings(res.data.bookings || []);
+      }
     } catch (err) {
+      console.error(err);
       message.error("Failed to load bookings");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchBookings(); }, []);
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
+  // ---------------- DETAILS ----------------
   const openDetails = async (id: string) => {
     try {
       const res = await adminAPI.get(`/api/bookings/${id}`);
-      if (res.data.success) {
+      if (res.data?.success) {
         setDetail(res.data.booking);
         setDetailVisible(true);
       }
@@ -36,10 +52,11 @@ const Bookings: React.FC = () => {
     }
   };
 
+  // ---------------- STATUS UPDATE ----------------
   const updateStatus = async (id: string, status: string) => {
     try {
       const res = await adminAPI.patch(`/api/bookings/${id}/status`, { status });
-      if (res.data.success) {
+      if (res.data?.success) {
         message.success("Status updated");
         fetchBookings();
       }
@@ -48,66 +65,151 @@ const Bookings: React.FC = () => {
     }
   };
 
-  const assignVendor = async (id: string, vendor_id: string) => {
-    try {
-      const res = await adminAPI.patch(`/api/bookings/${id}/vendor`, { vendor_id });
-      if (res.data.success) {
-        message.success("Vendor assigned");
-        fetchBookings();
-      }
-      
-    } catch {
-      message.error("Failed to assign vendor");
-    }
-  };
-
-  const columns = [
-    { title: "Ref", dataIndex: "booking_ref", key: "booking_ref" },
-    { title: "Customer", render: (r:any) => r.customer?.full_name || r.customer?.name || "—" },
-    { title: "Service", render: (r:any) => r.service?.name || "—" },
-    { title: "Vendor", render: (r:any) => r.vendor?.company_name || "Not Assigned" },
-    { title: "Scheduled", dataIndex: "scheduled_at", render: (d:string)=> new Date(d).toLocaleString() },
-    { title: "Price", dataIndex: "price", render: (p:number) => `₹${p}` },
+  // ---------------- TABLE COLUMNS ----------------
+  const columns: ColumnsType<any> = [
+    {
+      title: "Ref",
+      dataIndex: "booking_ref",
+      key: "booking_ref",
+      width: 140,
+    },
+    {
+      title: "Customer",
+      key: "customer",
+      width: 180,
+      render: (_, record) =>
+        record.customer?.full_name || record.customer?.name || "—",
+    },
+    {
+      title: "Service",
+      key: "service",
+      width: 160,
+      render: (_, record) => record.service?.name || "—",
+    },
+    {
+      title: "Vendor",
+      key: "vendor",
+      width: 180,
+      render: (_, record) =>
+        record.vendor?.company_name || "Not Assigned",
+    },
+    {
+      title: "Scheduled",
+      dataIndex: "scheduled_at",
+      key: "scheduled_at",
+      width: 200,
+      render: (d: string) =>
+        d ? new Date(d).toLocaleString() : "—",
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
+      width: 120,
+      render: (p: number) => `₹${p}`,
+    },
     {
       title: "Status",
-      render: (r:any) => (
-        <Select value={r.status} style={{ width: 160 }} onChange={(v)=> updateStatus(r.id, v)}>
+      key: "status",
+      width: 160,
+      render: (_, record) => (
+        <Select
+          value={record.status}
+          style={{ width: "100%" }}
+          onChange={(v) => updateStatus(record.id, v)}
+        >
           <Option value="requested">Requested</Option>
           <Option value="pending">Pending</Option>
           <Option value="confirmed">Confirmed</Option>
           <Option value="completed">Completed</Option>
           <Option value="cancelled">Cancelled</Option>
         </Select>
-      )
+      ),
     },
     {
       title: "Actions",
-      render: (r:any) => (
-        <>
-          <Button size="small" onClick={()=> openDetails(r.id)}>Details</Button>
-        </>
-      )
-    }
+      key: "actions",
+      width: 120,
+      render: (_, record) => (
+        <Button size="small" onClick={() => openDetails(record.id)}>
+          Details
+        </Button>
+      ),
+    },
   ];
 
+  // ---------------- RENDER ----------------
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Bookings</h2>
-      {loading ? <Spin /> : <Table rowKey="id" dataSource={bookings} columns={columns} pagination={{ pageSize: 10 }} />}
-      <Modal visible={detailVisible} title="Booking Details" onCancel={()=> setDetailVisible(false)} footer={null} width={800}>
+    <div
+      style={{
+        width: "100%",
+        minWidth: 0,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <h2 style={{ color: "#fff", marginBottom: 16 }}>Bookings</h2>
+
+      <div
+        style={{
+          flex: 1,
+          width: "100%",
+          overflowX: "auto",
+        }}
+      >
+        {loading ? (
+          <Spin />
+        ) : (
+          <Table
+            rowKey="id"
+            dataSource={bookings}
+            columns={columns}
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 1400 }}
+            bordered
+          />
+        )}
+      </div>
+
+      {/* ---------------- DETAILS MODAL ---------------- */}
+      <Modal
+        open={detailVisible}
+        title="Booking Details"
+        onCancel={() => setDetailVisible(false)}
+        footer={null}
+        width={720}
+        destroyOnClose
+      >
         {detail ? (
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Booking Ref">{detail.booking_ref}</Descriptions.Item>
-            <Descriptions.Item label="Customer">{detail.customer?.full_name}</Descriptions.Item>
-            <Descriptions.Item label="Customer Phone">{detail.customer?.phone}</Descriptions.Item>
-            <Descriptions.Item label="Service">{detail.service?.name}</Descriptions.Item>
-            <Descriptions.Item label="Vendor">{detail.vendor?.company_name || "Not assigned"}</Descriptions.Item>
-            <Descriptions.Item label="Scheduled At">{new Date(detail.scheduled_at).toLocaleString()}</Descriptions.Item>
-            <Descriptions.Item label="Address">{JSON.stringify(detail.address)}</Descriptions.Item>
-            <Descriptions.Item label="Notes">{detail.notes}</Descriptions.Item>
-            <Descriptions.Item label="Payments">{JSON.stringify(detail.payments)}</Descriptions.Item>
+            <Descriptions.Item label="Booking Ref">
+              {detail.booking_ref}
+            </Descriptions.Item>
+            <Descriptions.Item label="Customer">
+              {detail.customer?.full_name}
+            </Descriptions.Item>
+            <Descriptions.Item label="Phone">
+              {detail.customer?.phone}
+            </Descriptions.Item>
+            <Descriptions.Item label="Service">
+              {detail.service?.name}
+            </Descriptions.Item>
+            <Descriptions.Item label="Vendor">
+              {detail.vendor?.company_name || "Not assigned"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Scheduled At">
+              {new Date(detail.scheduled_at).toLocaleString()}
+            </Descriptions.Item>
+            <Descriptions.Item label="Address">
+              {JSON.stringify(detail.address)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Notes">
+              {detail.notes || "—"}
+            </Descriptions.Item>
           </Descriptions>
-        ) : <Spin /> }
+        ) : (
+          <Spin />
+        )}
       </Modal>
     </div>
   );

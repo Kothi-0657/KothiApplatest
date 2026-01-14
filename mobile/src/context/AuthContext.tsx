@@ -4,15 +4,15 @@ import React, { createContext, useState, useContext, ReactNode, useEffect } from
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
-  token(token: any): unknown;
-  location: string;
-  profileImage: any;
+  created_at: any;
   id: number;
   name: string;
   email: string;
   phone: string;
   role: string;
   profile_picture?: string; 
+  location?: string;
+  profileImage?: string;
 }
 
 interface AuthContextType {

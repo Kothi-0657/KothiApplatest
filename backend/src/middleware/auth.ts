@@ -26,10 +26,31 @@ export function authenticate(
     const decoded = jwt.verify(token, SECRET_KEY);
     (req as any).user = decoded;
     next();
-  } catch (error) {
-    console.error("Authentication error:", error);
-    return res
-      .status(403)
-      .json({ success: false, message: "Invalid or expired token" });
+  } catch (error: any) {
+  if (error.name === "TokenExpiredError") {
+    return res.status(401).json({
+      success: false,
+      message: "Token expired. Please login again.",
+    });
   }
+
+  return res.status(403).json({
+    success: false,
+    message: "Invalid token",
+  });
+  }
+}
+
+export function authorize(roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+
+    if (!user || !roles.includes(user.role)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Access denied" });
+    }
+
+    next();
+  };
 }

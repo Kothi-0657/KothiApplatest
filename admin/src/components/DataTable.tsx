@@ -1,15 +1,20 @@
+// admin/src/components/DataTable.tsx
 import React, { useState } from "react";
 
-interface DataRow {
-  id: string;
-  name: string;
-  amount: number;
-}
+export type Column = {
+  title: string;
+  dataIndex: string;
+  render?: (value: any, record: any) => React.ReactNode;
+};
 
-const TableWithPagination = ({ data }: { data: DataRow[] }) => {
+type DataTableProps = {
+  data: any[];
+  columns: Column[];
+  rowsPerPage?: number;
+};
+
+const DataTable: React.FC<DataTableProps> = ({ data, columns, rowsPerPage = 10 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
-
   const totalPages = Math.ceil(data.length / rowsPerPage);
 
   const handlePrev = () => {
@@ -26,11 +31,11 @@ const TableWithPagination = ({ data }: { data: DataRow[] }) => {
   const tableStyle: React.CSSProperties = {
     width: "100%",
     borderCollapse: "collapse",
-    fontSize: "12px", // smaller text
+    fontSize: "12px",
   };
 
   const thTdStyle: React.CSSProperties = {
-    border: "1px solid #ccc", // table lines
+    border: "1px solid #ccc",
     padding: "6px 8px",
     textAlign: "left",
   };
@@ -40,32 +45,46 @@ const TableWithPagination = ({ data }: { data: DataRow[] }) => {
       <table style={tableStyle}>
         <thead>
           <tr>
-            <th style={thTdStyle}>ID</th>
-            <th style={thTdStyle}>Name</th>
-            <th style={thTdStyle}>Amount</th>
+            {columns.map((col) => (
+              <th key={col.dataIndex} style={thTdStyle}>{col.title}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {currentData.map((row) => (
             <tr key={row.id}>
-              <td style={thTdStyle}>{row.id}</td>
-              <td style={thTdStyle}>{row.name}</td>
-              <td style={thTdStyle}>{row.amount}</td>
+              {columns.map((col) => (
+                <td key={col.dataIndex} style={thTdStyle}>
+                  {col.render ? col.render(row[col.dataIndex], row) : row[col.dataIndex]}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* Pagination Controls */}
-      <div style={{ marginTop: "10px", display: "flex", justifyContent: "center", gap: "10px" }}>
-        <button onClick={handlePrev} disabled={currentPage === 1}>⬅</button>
-        <span style={{ fontSize: "12px" }}>
-          Page {currentPage} of {totalPages}
+      {/* Pagination */}
+      <div
+        style={{
+          marginTop: "10px",
+          display: "flex",
+          justifyContent: "center",
+          gap: "10px",
+          fontSize: "12px",
+        }}
+      >
+        <button onClick={handlePrev} disabled={currentPage === 1}>
+          ⬅
+        </button>
+        <span>
+          Page {currentPage} of {totalPages || 1}
         </span>
-        <button onClick={handleNext} disabled={currentPage === totalPages}>➡</button>
+        <button onClick={handleNext} disabled={currentPage === totalPages || totalPages === 0}>
+          ➡
+        </button>
       </div>
     </div>
   );
 };
 
-export default TableWithPagination;
+export default DataTable;

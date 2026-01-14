@@ -1,277 +1,208 @@
-import React, { useState, useMemo, useEffect } from "react";
-import api from "../api/api";
-import { useAuth } from "../context/AuthContext";
+// src/screens/BookingScreen.tsx
+import React, { useState } from "react";
 import {
   View,
   Text,
+  StyleSheet,
+  ScrollView,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
   Alert,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
-import Checkbox from "expo-checkbox";
-import { useNavigation, useRoute } from "@react-navigation/native";
 
-/**
- * BookingScreen (Layout B) — multiple address fields, GST calc + total,
- * T&C link opens TermsAndConditions screen, passes calculatedTotal to PaymentScreen.
- * Now also fetches existing bookings for the logged-in user.
- */
+export default function BookingScreen({ route, navigation }: any) {
+  const { cartItems = [], totalAmount = 0 } = route.params || {};
 
-export default function BookingScreen() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
-  const service = route.params?.service || { id: "", name: "Unknown", price: "0" };
+  const [address, setAddress] = useState({
+    flat_no: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
 
-  const { user } = useAuth();
-  const [house, setHouse] = useState("");
-  const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [stateField, setStateField] = useState("");
-  const [pincode, setPincode] = useState("");
   const [notes, setNotes] = useState("");
-  const [agree, setAgree] = useState(false);
 
-  const [myBookings, setMyBookings] = useState<any[]>([]);
-  const [loadingBookings, setLoadingBookings] = useState(true);
-
-  const priceNum = useMemo(() => {
-    const p = Number(service.price);
-    return isNaN(p) ? 0 : p;
-  }, [service.price]);
-
-  const gst = useMemo(() => +(priceNum * 0.18).toFixed(2), [priceNum]);
-  const calculatedTotal = useMemo(() => +(priceNum + gst).toFixed(2), [priceNum, gst]);
-
-  // Fetch user bookings
-  useEffect(() => {
-    if (user?.id) fetchUserBookings();
-  }, [user]);
-
-  const fetchUserBookings = async () => {
-    try {
-      setLoadingBookings(true);
-      const res = await api.get(`/bookings/customer/${user.id}`);
-      setMyBookings(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch bookings:", err);
-      Alert.alert("Error", "Could not load your bookings.");
-    } finally {
-      setLoadingBookings(false);
-    }
-  };
+  if (!cartItems.length) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "#fff" }}>No items in booking</Text>
+      </View>
+    );
+  }
 
   const validateAddress = () => {
-    return house.trim() && street.trim() && city.trim() && stateField.trim() && pincode.trim();
+    const { flat_no, street, city, state, pincode } = address;
+    return flat_no && street && city && state && pincode;
   };
 
-  const onConfirmAndPay = () => {
+  const handleConfirmBooking = () => {
     if (!validateAddress()) {
-      Alert.alert("Address Required", "Please fill all address fields.");
-      return;
-    }
-    if (!agree) {
-      Alert.alert("Terms Required", "Please accept Terms & Conditions.");
+      Alert.alert("Address Required", "Please fill all address fields");
       return;
     }
 
-    const fullAddress = `${house.trim()}, ${street.trim()}, ${city.trim()}, ${stateField.trim()} - ${pincode.trim()}`;
-
+    // ✅ Navigate to PaymentScreen with full order details
     navigation.navigate("PaymentScreen", {
-      service,
-      address: fullAddress,
+      cartItems,
+      totalAmount,
+      address,
       notes,
-      gst,
-      calculatedTotal,
     });
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={bookingStyles.container}>
-        {/* Existing Booking Summary */}
-        <Text style={bookingStyles.heading}>Booking Summary</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Booking Summary</Text>
 
-        <View style={bookingStyles.card}>
-          <Text style={bookingStyles.cardTitle}>Service Selected</Text>
-          <Text style={bookingStyles.serviceName}>{service.name}</Text>
+      {/* SERVICES */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Service</Text>
 
-          <View style={bookingStyles.row}>
-            <Text style={bookingStyles.label}>Base Price</Text>
-            <Text style={bookingStyles.value}>₹ {priceNum.toFixed(2)}</Text>
-          </View>
-
-          <View style={bookingStyles.divider} />
-
-          <View style={bookingStyles.row}>
-            <Text style={bookingStyles.label}>GST (18%)</Text>
-            <Text style={bookingStyles.value}>₹ {gst.toFixed(2)}</Text>
-          </View>
-
-          <View style={bookingStyles.divider} />
-
-          <View style={bookingStyles.row}>
-            <Text style={bookingStyles.totalLabel}>Total Payable</Text>
-            <Text style={bookingStyles.totalValue}>₹ {calculatedTotal.toFixed(2)}</Text>
-          </View>
-        </View>
-
-        {/* Address Inputs */}
-        <Text style={bookingStyles.sectionLabel}>Address — Property Details</Text>
-        <TextInput
-          style={bookingStyles.input}
-          placeholder="House / Flat No."
-          placeholderTextColor="#9CA3AF"
-          value={house}
-          onChangeText={setHouse}
-        />
-        <TextInput
-          style={bookingStyles.input}
-          placeholder="Street / Area"
-          placeholderTextColor="#9CA3AF"
-          value={street}
-          onChangeText={setStreet}
-        />
-        <View style={bookingStyles.rowTwo}>
-          <TextInput
-            style={[bookingStyles.input, { flex: 1, marginRight: 8 }]}
-            placeholder="City"
-            placeholderTextColor="#9CA3AF"
-            value={city}
-            onChangeText={setCity}
-          />
-          <TextInput
-            style={[bookingStyles.input, { width: 110 }]}
-            placeholder="Pincode"
-            placeholderTextColor="#9CA3AF"
-            value={pincode}
-            onChangeText={setPincode}
-            keyboardType="number-pad"
-          />
-        </View>
-        <TextInput
-          style={bookingStyles.input}
-          placeholder="State"
-          placeholderTextColor="#9CA3AF"
-          value={stateField}
-          onChangeText={setStateField}
-        />
-
-        {/* Notes */}
-        <Text style={bookingStyles.sectionLabel}>Notes (Optional)</Text>
-        <TextInput
-          style={[bookingStyles.input, { height: 100 }]}
-          placeholder="Landmark, instructions..."
-          placeholderTextColor="#9CA3AF"
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-        />
-
-        {/* T&C */}
-        <View style={bookingStyles.tcRow}>
-          <Checkbox value={agree} onValueChange={setAgree} color={agree ? "#06B6D4" : undefined} />
-          <TouchableOpacity onPress={() => navigation.navigate("TermsAndConditions")}>
-            <Text style={bookingStyles.tcText}>
-              I agree to the <Text style={bookingStyles.tcLink}>Terms & Conditions</Text>
+        {cartItems.map((item: any, index: number) => (
+          <View key={index} style={styles.row}>
+            <Text style={styles.value}>
+              {item.service.name} × {item.qty}
             </Text>
-          </TouchableOpacity>
-        </View>
+            <Text style={styles.value}>
+              ₹{item.qty * Number(item.service.price)}
+            </Text>
+          </View>
+        ))}
 
-        {/* Confirm */}
-        <TouchableOpacity style={bookingStyles.confirmBtn} onPress={onConfirmAndPay}>
-          <Text style={bookingStyles.confirmBtnText}>Confirm & Pay</Text>
-        </TouchableOpacity>
+        <View style={styles.divider} />
+        <Text style={styles.total}>Total: ₹{totalAmount}</Text>
+      </View>
 
-        {/* ---------------- My Bookings Section ---------------- */}
-        <Text style={[bookingStyles.heading, { marginTop: 30 }]}>My Bookings</Text>
-        {loadingBookings ? (
-          <ActivityIndicator color="#06B6D4" />
-        ) : myBookings.length === 0 ? (
-          <Text style={{ color: "#0f0303ff", fontSize: 14, marginTop: 8 }}>No bookings found.</Text>
-        ) : (
-          myBookings.map((b) => (
-            <View key={b.id} style={bookingStyles.bookingCard}>
-              <Text style={bookingStyles.bookingService}>{b.service_name}</Text>
-              <Text style={bookingStyles.bookingText}>Booking Ref: {b.booking_ref}</Text>
-              <Text style={bookingStyles.bookingText}>Status: {b.status}</Text>
-              <Text style={bookingStyles.bookingText}>Price: ₹{b.price}</Text>
-            </View>
-          ))
-        )}
+      {/* ADDRESS */}
+      <Text style={styles.sectionTitle}>Property Address</Text>
 
-        <View style={{ height: 50 }} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <TextInput
+        placeholder="House / Flat No."
+        placeholderTextColor="#777"
+        style={styles.input}
+        value={address.flat_no}
+        onChangeText={(v) => setAddress({ ...address, flat_no: v })}
+      />
+
+      <TextInput
+        placeholder="Street / Area"
+        placeholderTextColor="#777"
+        style={styles.input}
+        value={address.street}
+        onChangeText={(v) => setAddress({ ...address, street: v })}
+      />
+
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <TextInput
+          placeholder="City"
+          placeholderTextColor="#777"
+          style={[styles.input, { flex: 1 }]}
+          value={address.city}
+          onChangeText={(v) => setAddress({ ...address, city: v })}
+        />
+
+        <TextInput
+          placeholder="Pincode"
+          placeholderTextColor="#777"
+          style={[styles.input, { flex: 1 }]}
+          keyboardType="numeric"
+          value={address.pincode}
+          onChangeText={(v) => setAddress({ ...address, pincode: v })}
+        />
+      </View>
+
+      <TextInput
+        placeholder="State"
+        placeholderTextColor="#777"
+        style={styles.input}
+        value={address.state}
+        onChangeText={(v) => setAddress({ ...address, state: v })}
+      />
+
+      {/* NOTES */}
+      <Text style={styles.sectionTitle}>Notes</Text>
+      <TextInput
+        style={[styles.input, { height: 90 }]}
+        multiline
+        value={notes}
+        onChangeText={setNotes}
+      />
+
+      <TouchableOpacity
+        style={styles.submitBtn}
+        onPress={handleConfirmBooking}
+      >
+        <Text style={styles.submitTxt}>Confirm Booking</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
-// ------------------- Styles -------------------
-const bookingStyles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#071029" },
-  heading: { color: "#0a0101ff", fontSize: 22, fontWeight: "800", marginBottom: 12 },
-
-  card: {
-    backgroundColor: "#0B1220",
-    borderRadius: 12,
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
     padding: 16,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.04)",
+    backgroundColor: "#0f1724",
   },
-  cardTitle: { color: "#9CA3AF", fontSize: 13, marginBottom: 6, fontWeight: "600" },
-  serviceName: { color: "#fff", fontSize: 18, fontWeight: "700", marginBottom: 10 },
-
-  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 6 },
-  label: { color: "#cbd5e1", fontSize: 15 },
-  value: { color: "#fff", fontSize: 15 },
-
-  divider: { height: 1, backgroundColor: "#1f2937", marginVertical: 8 },
-
-  totalLabel: { color: "#cbd5e1", fontSize: 16, fontWeight: "700" },
-  totalValue: { color: "#fff", fontSize: 16, fontWeight: "800" },
-
-  sectionLabel: { color: "#9CA3AF", fontSize: 13, marginTop: 8, marginBottom: 6, fontWeight: "600" },
-  input: {
-    backgroundColor: "#061426",
-    color: "#fff",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.03)",
-  },
-  rowTwo: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-
-  tcRow: { flexDirection: "row", alignItems: "center", marginTop: 6 },
-  tcText: { color: "#cbd5e1", marginLeft: 8 },
-  tcLink: { color: "#06B6D4", textDecorationLine: "underline", fontWeight: "700" },
-
-  confirmBtn: {
-    backgroundColor: "#06B6D4",
-    paddingVertical: 12,
-    borderRadius: 10,
+  center: {
+    flex: 1,
     alignItems: "center",
-    marginTop: 14,
+    justifyContent: "center",
+    backgroundColor: "#0f1724",
   },
-  confirmBtnText: { color: "#041222", fontWeight: "800", fontSize: 16 },
-
-  bookingCard: {
-    backgroundColor: "#071829",
-    borderRadius: 10,
+  header: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 12,
+  },
+  card: {
+    backgroundColor: "#111827",
     padding: 12,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.03)",
+    borderRadius: 8,
+    marginBottom: 12,
   },
-  bookingService: { color: "#fff", fontWeight: "800", marginBottom: 6 },
-  bookingText: { color: "#cbd5e1", fontSize: 13 },
+  sectionTitle: {
+    fontSize: 16,
+    color: "#d1d5db",
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 6,
+  },
+  value: {
+    color: "#fff",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#374151",
+    marginVertical: 8,
+  },
+  total: {
+    color: "#fff",
+    fontWeight: "700",
+    textAlign: "right",
+  },
+  input: {
+    backgroundColor: "#0b1220",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 10,
+  },
+  submitBtn: {
+    backgroundColor: "#2563eb",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 12,
+    marginBottom: 24,
+  },
+  submitTxt: {
+    color: "#fff",
+    fontWeight: "600",
+  },
 });

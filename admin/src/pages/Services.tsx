@@ -20,11 +20,13 @@ const categories = [
 
 // ---------- Styles ----------
 const containerStyle: React.CSSProperties = {
-  padding: 15,
+  padding: 20,
   minHeight: "100vh",
   background: "linear-gradient(135deg, #000000, #1a1a1a)",
   color: "#fff",
   fontSize: 14,
+  width: "90%",
+  boxSizing: "border-box",
 };
 
 const cardStyle: React.CSSProperties = {
@@ -34,6 +36,8 @@ const cardStyle: React.CSSProperties = {
   padding: 16,
   boxShadow: "0 6px 18px rgba(16,24,40,0.06)",
   border: "1px solid #e6e6e6",
+  width: "100%",
+  maxWidth: "100%",
 };
 
 const inputStyle: React.CSSProperties = {
@@ -47,7 +51,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const primaryBtnStyle: React.CSSProperties = {
-  backgroundColor: "#ffd700",
+  backgroundColor: "#f6951fff",
   color: "#000",
   padding: "6px 12px",
   borderRadius: 6,
@@ -69,13 +73,14 @@ const tableWrapperStyle: React.CSSProperties = {
 const tableStyle: React.CSSProperties = {
   width: "100%",
   borderCollapse: "collapse",
-  color: "#000",
+  color: "#51687fff",
   fontSize: 13,
+  minWidth: 600, // ensures table does not shrink too much
 };
 
 const headerRowStyle: React.CSSProperties = {
-  backgroundColor: "#333",
-  color: "#ffd700",
+  backgroundColor: "#7c7979ff",
+  color: "#090905ff",
   fontSize: 13,
 };
 
@@ -213,7 +218,7 @@ export default function AdminServices() {
           <select
             value={form.category}
             onChange={(e) => handleChange("category", e.target.value)}
-            style={{ ...inputStyle, minWidth: 150 }}
+            style={{ ...inputStyle, minWidth: 100 }}
           >
             <option value="">Select Category</option>
             {categories.map((c) => (
@@ -228,7 +233,7 @@ export default function AdminServices() {
             placeholder="Sub Category"
             value={form.sub_category}
             onChange={(e) => handleChange("sub_category", e.target.value)}
-            style={{ ...inputStyle, minWidth: 150 }}
+            style={{ ...inputStyle, minWidth: 100 }}
           />
           <datalist id="subcategories">
             {subCategories.map((sc) => (
@@ -240,7 +245,7 @@ export default function AdminServices() {
             placeholder="Line Item"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
-            style={{ ...inputStyle, flex: 1, minWidth: 200 }}
+            style={{ ...inputStyle, flex: 1, minWidth: 100 }}
           />
 
           <input
@@ -288,7 +293,7 @@ export default function AdminServices() {
             <tbody>
               {services.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: 12, color: "#6b7280", textAlign: "center" }}>
+                  <td colSpan={5} style={{ padding: 12, color: "#acb3c2ff", textAlign: "center" }}>
                     No services found.
                   </td>
                 </tr>

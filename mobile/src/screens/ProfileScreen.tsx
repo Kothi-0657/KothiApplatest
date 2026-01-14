@@ -1,5 +1,3 @@
-// src/screens/ProfileScreen.tsx
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -12,187 +10,253 @@ import {
   Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ImagePicker from "expo-image-picker"; // Adjust the path as necessary
+import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, loading, logout } = useAuth();
   const [image, setImage] = useState<string | null>(null);
 
-  // Load profile picture from storage
   useEffect(() => {
-    const loadProfileImage = async () => {
-      const img = await AsyncStorage.getItem("profile_image");
+    AsyncStorage.getItem("profile_image").then((img) => {
       if (img) setImage(img);
-    };
-    loadProfileImage();
+    });
   }, []);
 
-  // Pick new profile image
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      return Alert.alert("Permission Denied", "Allow access to photos.");
+      Alert.alert("Permission Required", "Please allow photo access");
+      return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      await AsyncStorage.setItem("profile_image", result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setImage(uri);
+      await AsyncStorage.setItem("profile_image", uri);
     }
   };
 
-  // Logout handler
   const handleLogout = async () => {
-    await logout(); // <-- AuthContext logout
-
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Login" }],
-    });
+    await logout();
+    navigation.reset({ index: 0, routes: [{ name: "Login" }] });
   };
 
-  if (loading)
-    return <ActivityIndicator style={{ flex: 1 }} color="#c6a664" />;
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#f8e4b0" />
+      </View>
+    );
+  }
 
   if (!user) {
     return (
       <View style={styles.center}>
-        <Text style={styles.msg}>No user data found. Please log in.</Text>
-        <TouchableOpacity onPress={() => navigation.replace("Login")}>
-          <Text style={styles.link}>Go to Login</Text>
-        </TouchableOpacity>
+        <Text style={{ color: "#fff" }}>No user found</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>My Profile</Text>
+    <LinearGradient colors={["#0d0d0d", "#1a1a1a"]} style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
 
-      {/* Profile Picture */}
-      <View style={styles.imageWrapper}>
-        <TouchableOpacity onPress={pickImage}>
-          <Image
-            source={
-              image
-                ? { uri: image }
-                : require("../assets/profilepicplaceholder.png")
+        {/* PROFILE IMAGE SECTION */}
+        <View style={styles.imageCard}>
+          <TouchableOpacity onPress={pickImage}>
+            <Image
+              source={
+                image
+                  ? { uri: image }
+                  : require("../assets/profilepicplaceholder.png")
+              }
+              style={styles.profileImage}
+            />
+          </TouchableOpacity>
+          <Text style={styles.imageHint}>Tap to add / change profile picture</Text>
+        </View>
+
+        {/* CUSTOMER DETAILS */}
+        <BlurView intensity={35} tint="dark" style={styles.glassCard}>
+          <Info label="Name" value={user.name} />
+          <Info label="Email ID" value={user.email} />
+          <Info label="Customer ID" value={user.id} />
+          <Info label="Location / Address" value={user.location || "Not added"} />
+          <Info
+            label="Subscribed On"
+            value={
+              user.created_at
+                ? new Date(user.created_at).toDateString()
+                : "N/A"
             }
-            style={styles.profileImage}
           />
-        </TouchableOpacity>
-        <Text style={styles.uploadText}>Tap to change picture</Text>
-      </View>
+        </BlurView>
 
-      {/* User Details */}
-      <View style={styles.card}>
-        <Text style={styles.label}>Full Name</Text>
-        <Text style={styles.value}>{user.name}</Text>
+        {/* ACTION BOX */}
+        <BlurView intensity={30} tint="dark" style={styles.actionCard}>
+          <Option text="Manage Address" onPress={() => navigation.navigate("Addresses")} />
+          <Option text="Profile Settings" onPress={() => navigation.navigate("ProfileSettings")} />
+          <Option text="My Bookings" onPress={() => navigation.navigate("Bookings")} />
+          <Option text="My Payments" onPress={() => navigation.navigate("Payments")} />
+          <Option text="Help & Support" onPress={() => navigation.navigate("Help")} />
+        </BlurView>
 
-        <Text style={styles.label}>Customer ID</Text>
-        <Text style={styles.value}>{user.id}</Text>
+        {/* RATINGS & LOGOUT */}
+        <BlurView intensity={30} tint="dark" style={styles.bottomCard}>
+          <Text style={styles.ratingText}>⭐ 4.8 / 5</Text>
+          <Text style={styles.feedbackText}>
+            Thanks for being a valued customer 💛
+          </Text>
 
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user.email}</Text>
-
-        <Text style={styles.label}>Phone</Text>
-        <Text style={styles.value}>{user.phone}</Text>
-      </View>
-
-      {/* Links */}
-      <View style={styles.links}>
-        <Option text="Manage Account" onPress={() => navigation.navigate("Account")} />
-        <Option text="Saved Addresses" onPress={() => navigation.navigate("Addresses")} />
-        <Option text="My Bookings" onPress={() => navigation.navigate("Bookings")} />
-        <Option text="Payment History" onPress={() => navigation.navigate("Payments")} />
-        <Option text="Help & Support" onPress={() => navigation.navigate("Help")} />
-        <Option text="Partner With Us" onPress={() => navigation.navigate("Partner")} />
-      </View>
-
-      {/* Logout Button */}
-      <View style={{ alignItems: "center", marginTop: 30 }}>
-        <TouchableOpacity activeOpacity={0.8} onPress={handleLogout} style={styles.logoutContainer}>
-          <LinearGradient
-            colors={["rgba(198,166,100,0.25)", "rgba(248,228,176,0.15)"]}
-            style={styles.logoutButton}
-          >
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
             <Text style={styles.logoutText}>Log Out</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          </TouchableOpacity>
+        </BlurView>
+
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
+/* ---------- COMPONENTS ---------- */
+
+const Info = ({ label, value }: any) => (
+  <View style={styles.infoRow}>
+    <Text style={styles.infoLabel}>{label}</Text>
+    <Text style={styles.infoValue}>{value}</Text>
+  </View>
+);
+
 const Option = ({ text, onPress }: any) => (
-  <TouchableOpacity onPress={onPress}>
-    <Text style={styles.option}>{text}</Text>
+  <TouchableOpacity onPress={onPress} style={styles.optionRow}>
+    <Text style={styles.optionText}>{text}</Text>
+    <Text style={styles.arrow}>›</Text>
   </TouchableOpacity>
 );
 
+/* ---------- STYLES ---------- */
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#1c1c1c" },
-  header: { fontSize: 26, fontWeight: "700", color: "#fff", marginBottom: 10 },
-
-  imageWrapper: { alignItems: "center", marginBottom: 15 },
-  profileImage: {
-    width: 110,
-    height: 110,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: "#f8e4b0",
-  },
-  uploadText: { color: "#bbb", marginTop: 8, fontSize: 13 },
-
-  card: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderRadius: 15,
+  container: {
     padding: 20,
-    marginBottom: 20,
-  },
-  label: { color: "#bbb", fontSize: 14, marginTop: 10 },
-  value: { color: "#fff", fontSize: 16, fontWeight: "600" },
-
-  links: { marginTop: 10 },
-  option: {
-    color: "#f8e4b0",
-    fontSize: 17,
-    marginVertical: 10,
-    fontWeight: "600",
+    paddingBottom: 40,
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1c1c1c",
+    backgroundColor: "#0d0d0d",
   },
-  msg: { color: "#fff", fontSize: 18, marginBottom: 10 },
-  link: { color: "#c6a664", fontSize: 17, fontWeight: "600" },
 
-  logoutContainer: {
-    width: "80%",
-    borderRadius: 15,
-    overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.25)",
-  },
-  logoutButton: {
-    paddingVertical: 14,
-    justifyContent: "center",
+  imageCard: {
+    backgroundColor: "#f5f1e8",
+    borderRadius: 20,
     alignItems: "center",
+    paddingVertical: 20,
+    marginBottom: 20,
   },
-  logoutText: {
+
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#ddd",
+  },
+
+  imageHint: {
+    marginTop: 10,
+    fontSize: 13,
+    color: "#555",
+  },
+
+  glassCard: {
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 20,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+
+  infoRow: {
+    marginBottom: 14,
+  },
+
+  infoLabel: {
+    color: "#aaa",
+    fontSize: 13,
+  },
+
+  infoValue: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+
+  actionCard: {
+    borderRadius: 20,
+    marginBottom: 20,
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+
+  optionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.08)",
+  },
+
+  optionText: {
     color: "#f8e4b0",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  arrow: {
+    color: "#888",
+    fontSize: 18,
+  },
+
+  bottomCard: {
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+
+  ratingText: {
+    fontSize: 18,
     fontWeight: "700",
-    fontSize: 17,
-    letterSpacing: 0.5,
+    color: "#f8e4b0",
+  },
+
+  feedbackText: {
+    color: "#ccc",
+    fontSize: 14,
+    marginVertical: 10,
+    textAlign: "center",
+  },
+
+  logoutBtn: {
+    marginTop: 10,
+    backgroundColor: "#f8e4b0",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 14,
+  },
+
+  logoutText: {
+    color: "#000",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

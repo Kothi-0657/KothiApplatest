@@ -1,91 +1,237 @@
-// src/screens/ProfileBookings.tsx
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProfileBookings() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchBookings = useCallback(async () => {
+    // ⛔ DO NOT CALL API until auth is READY
+    if (!user?.id || !token) {
+      console.log("Auth not ready → skipping bookings fetch");
+      return;
+    }
+
+    try {
+      setError(null);
+
+      const res = await api.get(
+        `/api/customers/bookings/${user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Bookings API response:", res.data);
+
+      // ✅ Handle ALL backend shapes
+      const list =
+        Array.isArray(res.data?.bookings)
+          ? res.data.bookings
+          : Array.isArray(res.data?.data)
+          ? res.data.data
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
+
+      setBookings(list);
+    } catch (err: any) {
+      console.error(
+        "Bookings fetch error:",
+        err?.response?.data || err.message || err
+      );
+      setError("Failed to load bookings. Please try again.");
+      setBookings([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [user?.id, token]);
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        // ✅ FIXED ROUTE BASED ON server.ts FINAL PATH
-        const res = await api.get(`/customer/booking/customer/${user.id}`);
+    if (user?.id && token) {
+      fetchBookings();
+    }
+  }, [fetchBookings]);
 
-        setBookings(res.data.bookings || []);
-      } catch (err) {
-        console.log("Error fetching customer bookings:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchBookings();
+  };
 
-    if (user?.id) fetchBookings();
-  }, [user]);
+  /* ---------------- STATES ---------------- */
 
-  if (loading)
-    return <ActivityIndicator style={{ flex: 1 }} color="#FFD700" size="large" />;
-
-  if (!bookings.length)
+  if (!user || !token) {
     return (
       <View style={styles.center}>
-        <Text style={styles.msg}>No bookings found.</Text>
+        <ActivityIndicator size="large" color="#FFD700" />
+        <Text style={styles.msg}>Loading user session…</Text>
       </View>
     );
+  }
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.service}>{item.service}</Text>
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#FFD700" />
+      </View>
+    );
+  }
 
-      <Text style={styles.date}>Date: {item.date}</Text>
-      <Text style={styles.date}>Time: {item.time}</Text>
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.msg}>{error}</Text>
+      </View>
+    );
+  }
 
-      <Text
-        style={[
-          styles.status,
-          item.status === "accepted" ? styles.accepted : styles.pending,
-        ]}
-      >
-        Status: {item.status}
-      </Text>
+  if (bookings.length === 0) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.msg}>No bookings found yet</Text>
+      </View>
+    );
+  }
 
-      <Text style={styles.price}>Price: ₹{item.price}</Text>
-
-      <Text style={styles.created}>
-        Booked on: {new Date(item.created_at).toLocaleString()}
-      </Text>
-    </View>
-  );
+  /* ---------------- RENDER ---------------- */
 
   return (
-    <FlatList
-      data={bookings}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={{ padding: 20 }}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={bookings}
+        keyExtractor={(item) => String(item.id)}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        renderItem={({ item }) => {
+          const service =
+            item.service_name ||
+            item.service?.name ||
+            "Service";
+
+          return (
+            <View style={styles.card}>
+              <Text style={styles.service}>{service}</Text>
+
+              <Text style={styles.text}>
+                Date: {item.date || "N/A"}
+              </Text>
+
+              <Text style={styles.text}>
+                Time: {item.time || "N/A"}
+              </Text>
+
+              <Text
+                style={[
+                  styles.status,
+                  item.status === "accepted"
+                    ? styles.accepted
+                    : styles.pending,
+                ]}
+              >
+                Status: {item.status || "pending"}
+              </Text>
+
+              <Text style={styles.price}>
+                ₹ {item.price ?? 0}
+              </Text>
+
+              <Text style={styles.created}>
+                Booked on:{" "}
+                {item.created_at
+                  ? new Date(item.created_at).toLocaleString()
+                  : "N/A"}
+              </Text>
+            </View>
+          );
+        }}
+      />
+    </View>
   );
 }
 
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  msg: { color: "#fff", fontSize: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: "#020617",
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#020617",
+    paddingHorizontal: 16,
+  },
+
+  msg: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 10,
+  },
+
   card: {
     backgroundColor: "#0B1220",
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: 14,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.05)",
+    borderColor: "rgba(255,255,255,0.06)",
   },
-  service: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  date: { color: "#9CA3AF", marginTop: 4 },
-  status: { marginTop: 6, fontSize: 14, fontWeight: "600" },
+
+  service: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+
+  text: {
+    color: "#9CA3AF",
+    fontSize: 14,
+    marginTop: 2,
+  },
+
+  status: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
   accepted: { color: "#06B6D4" },
   pending: { color: "#FBBF24" },
-  price: { color: "#fff", marginTop: 6, fontSize: 14 },
-  created: { color: "#9CA3AF", marginTop: 6, fontSize: 12 },
+
+  price: {
+    color: "#fff",
+    fontSize: 14,
+    marginTop: 8,
+    fontWeight: "600",
+  },
+
+  created: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 6,
+  },
 });

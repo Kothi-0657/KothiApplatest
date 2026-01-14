@@ -21,7 +21,12 @@ export default function CartScreen({ navigation }: any) {
       Alert.alert("Cart Empty", "Please add services before continuing.");
       return;
     }
-    navigation.navigate("Booking", { cartItems: items });
+
+    // ✅ FIXED: Stack screen name is "Booking", NOT "BookingScreen"
+    navigation.navigate("Booking", {
+      cartItems: items,
+      totalAmount: total,
+    });
   };
 
   const renderFooter = () => (
@@ -161,7 +166,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
-  // Floating footer just below last item
   floatingFooter: {
     marginTop: 20,
     padding: 16,

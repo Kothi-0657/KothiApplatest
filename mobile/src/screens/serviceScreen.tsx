@@ -157,11 +157,11 @@ export default function ServiceScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.pageTitle}>All Services</Text>
+      <Text style={styles.pageTitle}>Kothi India Services</Text>
 
       {/* SEARCH BAR */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={18} color="#666" />
+        <Ionicons name="search-outline" size={22} color="#f96901ff" />
         <TextInput
           value={searchText}
           onChangeText={(t) => {
@@ -169,7 +169,7 @@ export default function ServiceScreen({ navigation }: any) {
             setSearchActive(t.length > 0);
           }}
           placeholder="Search..."
-          style={{ flex: 1, paddingVertical: 6, paddingLeft: 6 }}
+          style={{ flex: 1, paddingVertical: 7, paddingLeft: 6 }}
         />
         {searchText.length > 0 && (
           <TouchableOpacity
@@ -211,12 +211,12 @@ export default function ServiceScreen({ navigation }: any) {
               >
                 <Ionicons
                   name={cat.icon}
-                  size={16}
-                  color={active ? "#080401ff" : "#f3670aff"}
+                  size={active ? 22 : 12}
+                  color={active ? "#080401ff" : "#883d0aff"}
                 />
                 <Text
                   style={{
-                    color: active ? "#ff6f00" : "#444",
+                    color: active ? "#883d0aff" : "#444",
                     fontWeight: "600",
                   }}
                 >
@@ -229,7 +229,7 @@ export default function ServiceScreen({ navigation }: any) {
       </ScrollView>
 
       {/* CONTENT */}
-      <Animated.View style={{ flex: 20, transform: [{ translateX: slideAnim }] }}>
+      <Animated.View style={{ flex: 30, transform: [{ translateX: slideAnim }] }}>
         {/* SEARCH MODE */}
         {searchActive ? (
           <FlatList
@@ -246,7 +246,7 @@ export default function ServiceScreen({ navigation }: any) {
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 180 }}
+            contentContainerStyle={{ paddingBottom: 100 }}
           >
             {Object.keys(displayedSubcategories).map((sub, index) => (
               <View key={sub}>
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.95)",
     marginHorizontal: 18,
-    marginTop: 12,
+    marginTop: 22,
     padding: 6,
     borderRadius: 10,
   },
@@ -302,28 +302,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 3,
     marginRight: 12,
   },
 
   subHeader: {
-    padding: 14,
+    padding: 7,
     marginHorizontal: 20,
     marginTop: 20,
-    backgroundColor: "#EEE",
+    backgroundColor: "#d7a983ff",
     borderRadius: 10,
     flexDirection: "row",
     justifyContent: "space-between",
   },
 
   cardWrapper: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 14,
-    borderRadius: 14,
+    marginHorizontal: 40,
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 8,
     overflow: "hidden",
   },
 
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
       : {}),
   },
 
-  cardTitle: { fontSize: 15, fontWeight: "600", color: "#000" },
+  cardTitle: { fontSize: 15, fontWeight: "600", color: "#060505ff" },
 
   priceRow: {
     flexDirection: "row",
@@ -349,11 +349,11 @@ const styles = StyleSheet.create({
   cardPrice: { fontSize: 13, fontWeight: "500" },
 
   bookButton: {
-    backgroundColor: "#070769",
-    paddingVertical: 6,
+    backgroundColor: "#160e5fff",
+    paddingVertical: 2,
     paddingHorizontal: 14,
     borderRadius: 20,
   },
 
-  bookButtonText: { color: "#fff", fontWeight: "600", fontSize: 12 },
+  bookButtonText: { color: "#fff", fontWeight: "400", fontSize: 9 },
 });

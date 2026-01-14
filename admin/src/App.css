@@ -58,7 +58,7 @@ h1, h2, h3, h4, p, label, input, select, td, th {
 }
 
 .btn-add:hover {
-  background-color: #e6c200;
+  background-color: #ee9d19;
 }
 
 /* Table Section */
@@ -98,7 +98,7 @@ h1, h2, h3, h4, p, label, input, select, td, th {
 }
 
 .btn-modify {
-  background-color: #007bff;
+  background-color: #081f39;
   border: none;
   padding: 6px 12px;
   border-radius: 6px;
@@ -109,7 +109,7 @@ h1, h2, h3, h4, p, label, input, select, td, th {
 }
 
 .btn-modify:hover {
-  background-color: #0056b3;
+  background-color: #082544;
 }
 
 .btn-delete {

@@ -20,9 +20,9 @@ const Vendors: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  useEffect(()=> { fetch(); }, []);
+  useEffect(() => { fetch(); }, []);
 
-  const changeStatus = async (id:string, status:string) => {
+  const changeStatus = async (id: string, status: string) => {
     try {
       const res = await adminAPI.put(`/api/vendors/${id}`, { status });
       if (res.data.success) {
@@ -34,7 +34,7 @@ const Vendors: React.FC = () => {
     }
   };
 
-  const open = async (id:string) => {
+  const open = async (id: string) => {
     try {
       const res = await adminAPI.get(`/api/vendors/${id}`);
       if (res.data.success) {
@@ -54,21 +54,69 @@ const Vendors: React.FC = () => {
     { title: "Rating", dataIndex: "rating" },
     {
       title: "Status",
-      render: (r:any) => (
-        <Select value={r.status} onChange={(v)=> changeStatus(r.id, v)}>
+      render: (r: any) => (
+        <Select
+          value={r.status}
+          onChange={(v) => changeStatus(r.id, v)}
+          style={{ minWidth: 120 }}
+        >
           <Option value="active">Active</Option>
           <Option value="inactive">Inactive</Option>
         </Select>
-      )
+      ),
     },
-    { title: "View", render: (r:any)=> <Button size="small" onClick={()=> open(r.id)}>View</Button> }
+    { title: "View", render: (r: any) => <Button size="small" onClick={() => open(r.id)}>View</Button> },
   ];
 
+  // ---------- Styles ----------
+  const containerStyle: React.CSSProperties = {
+    padding: 24,
+    minHeight: "100vh",
+    background: "#0d0d0d",
+    width: "100%",
+    maxWidth: "1200px",
+    margin: "0 auto",
+    color: "#fff",
+  };
+
+  const tableWrapperStyle: React.CSSProperties = {
+    background: "#111827",
+    borderRadius: 8,
+    padding: 10,
+    overflowX: "auto",
+  };
+
+  const tableHeaderStyle: React.CSSProperties = {
+    backgroundColor: "#1f2937",
+    color: "#fff",
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Vendors</h2>
-      {loading ? <Spin /> : <Table rowKey="id" dataSource={vendors} columns={columns} />}
-      <Modal visible={visible} title="Vendor Details" onCancel={()=> setVisible(false)} footer={null}>
+    <div style={containerStyle}>
+      <h2 style={{ marginBottom: 20 }}>Vendors</h2>
+
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <div style={tableWrapperStyle}>
+          <Table
+            rowKey="id"
+            dataSource={vendors}
+            columns={columns}
+            pagination={{ pageSize: 10 }}
+            bordered
+            scroll={{ x: 1000 }}
+          />
+        </div>
+      )}
+
+      <Modal
+        visible={visible}
+        title="Vendor Details"
+        onCancel={() => setVisible(false)}
+        footer={null}
+        width={800}
+      >
         {detail ? (
           <Descriptions column={1} bordered>
             <Descriptions.Item label="Company">{detail.company_name}</Descriptions.Item>
@@ -79,7 +127,7 @@ const Vendors: React.FC = () => {
             <Descriptions.Item label="Services">{JSON.stringify(detail.services_offered_details)}</Descriptions.Item>
             <Descriptions.Item label="Rating / Jobs">{detail.rating} / {detail.total_jobs}</Descriptions.Item>
           </Descriptions>
-        ) : <Spin /> }
+        ) : <Spin />}
       </Modal>
     </div>
   );

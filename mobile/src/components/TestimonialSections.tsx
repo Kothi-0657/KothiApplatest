@@ -8,143 +8,197 @@ import {
   Image,
   Dimensions,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
+const CARD_WIDTH = width * 0.78;
 
-// 🟠 Random review pool
-const REVIEW_POOL = [
-  "Excellent service and very professional team.",
-  "Work quality was outstanding and timely.",
-  "Affordable pricing with great finishing.",
-  "Very smooth experience from booking to delivery.",
-  "Highly recommended for home renovation.",
-  "Professional staff and quality materials used.",
-  "On-time service with clean finishing.",
-  "Best service experience I’ve had so far.",
-  "Great coordination and transparent pricing.",
-  "Really impressed with the attention to detail.",
+/* -------------------- DATA POOLS -------------------- */
+
+const NAMES = [
+  "Amit Sharma",
+  "Neha Verma",
+  "Rahul Mehta",
+  "Priya Singh",
+  "Ankit Gupta",
+  "Pooja Kapoor",
+  "Suresh Iyer",
+  "Ritika Jain",
 ];
 
-// 🟠 Neutral avatar pool (small & reusable)
-const AVATARS = [
-  require("../assets/profilepicplaceholder.png"),
-  require("../assets/profilepicplaceholder.png"),
-  require("../assets/profilepicplaceholder.png"),
+const REVIEWS = [
+  "Exceptional service quality with great attention to detail. The team was professional and very responsive throughout the project.",
+  "From booking to execution, everything was smooth and transparent. Highly satisfied with the final outcome.",
+  "Work was completed on time with excellent finishing. Definitely recommended for reliable home services.",
+  "Very professional staff and well-organized execution. Pricing was fair and communication was clear.",
+  "One of the best service experiences I’ve had. Clean work, polite team, and great results.",
+  "Impressed by the quality and dedication of the team. Will surely use their services again.",
 ];
 
-// 🟠 Generate random reviews ONCE
-const generateReviews = (count = 12) =>
-  Array.from({ length: count }).map((_, i) => ({
-    id: `${i}`,
-    text: REVIEW_POOL[Math.floor(Math.random() * REVIEW_POOL.length)],
-    avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)],
-  }));
+/* -------------------- HELPERS -------------------- */
+
+// Random realistic customer avatar (remote)
+const randomAvatar = () => {
+  const gender = Math.random() > 0.5 ? "men" : "women";
+  const id = Math.floor(Math.random() * 90) + 1;
+  return `https://randomuser.me/api/portraits/${gender}/${id}.jpg`;
+};
+
+const generateTestimonials = (count = 10) =>
+  Array.from({ length: count }).map((_, i) => {
+    const rating = Math.random() > 0.6 ? 5 : 4;
+    return {
+      id: String(i),
+      name: NAMES[Math.floor(Math.random() * NAMES.length)],
+      text: REVIEWS[Math.floor(Math.random() * REVIEWS.length)],
+      avatar: randomAvatar(),
+      rating,
+    };
+  });
+
+/* -------------------- COMPONENT -------------------- */
 
 export default function TestimonialsSection() {
-  const testimonials = useMemo(() => generateReviews(12), []);
+  const testimonials = useMemo(() => generateTestimonials(10), []);
   const flatListRef = useRef<FlatList>(null);
   const indexRef = useRef(0);
 
-  // 🔁 Auto scroll
+  // 🔁 Auto-scroll
   useEffect(() => {
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       indexRef.current = (indexRef.current + 1) % testimonials.length;
       flatListRef.current?.scrollToIndex({
         index: indexRef.current,
         animated: true,
       });
-    }, 3200);
+    }, 4200);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, [testimonials.length]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Voice of Our Customers</Text>
+      <Text style={styles.title}>What Our Customers Say</Text>
+      <Text style={styles.subtitle}>
+        Trusted by homeowners across India
+      </Text>
 
       <FlatList
         ref={flatListRef}
-        data={testimonials}
         horizontal
+        data={testimonials}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingLeft: 18, paddingRight: 10 }}
         getItemLayout={(_, index) => ({
-          length: width * 0.72,
-          offset: width * 0.72 * index,
+          length: CARD_WIDTH,
+          offset: CARD_WIDTH * index,
           index,
         })}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <LinearGradient
+            colors={[
+              "rgba(255,255,255,0.18)",
+              "rgba(255,255,255,0.05)",
+            ]}
+            style={styles.card}
+          >
+            {/* HEADER */}
             <View style={styles.header}>
-              <Image source={item.avatar} style={styles.avatar} />
-              <Text style={styles.stars}>★★★★★</Text>
+              <Image
+                source={{ uri: item.avatar }}
+                style={styles.avatar}
+              />
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.stars}>
+                  {"★".repeat(item.rating)}
+                  {"☆".repeat(5 - item.rating)}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.text}>{item.text}</Text>
-          </View>
+
+            {/* REVIEW */}
+            <Text style={styles.reviewText}>{item.text}</Text>
+          </LinearGradient>
         )}
       />
     </View>
   );
 }
+
+/* -------------------- STYLES -------------------- */
+
 const styles = StyleSheet.create({
   container: {
-    marginTop: 28,
+    marginTop: 36,
+    marginBottom: 20,
   },
 
   title: {
+    fontSize: 20,
+    fontWeight: "800",
     color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 14,
-    marginLeft: 12,
+    marginLeft: 18,
   },
 
-  listContent: {
-    paddingLeft: 16,
-    paddingRight: 8,
+  subtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.65)",
+    marginLeft: 18,
+    marginBottom: 16,
   },
 
   card: {
-    width: width * 0.72,
-    backgroundColor: "#111827",
-    padding: 16,
-    borderRadius: 16,
+    width: CARD_WIDTH,
+    padding: 18,
+    borderRadius: 18, // ⬛ soft square
     marginRight: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
 
-    // Android shadow
-    elevation: 5,
+    // Android
+    elevation: 6,
 
-    // iOS shadow
+    // iOS
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
   },
 
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   avatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    marginRight: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    marginRight: 12,
     borderWidth: 1,
-    borderColor: "#f3680bff",
+    borderColor: "#f97316",
+    backgroundColor: "#111827",
+  },
+
+  name: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#ffffff",
   },
 
   stars: {
+    marginTop: 2,
+    fontSize: 13,
     color: "#facc15",
-    fontSize: 12,
   },
 
-  text: {
-    color: "#e5e7eb",
+  reviewText: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 22,
+    color: "rgba(255,255,255,0.85)",
   },
 });

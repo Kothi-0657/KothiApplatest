@@ -19,9 +19,12 @@ export const fetchPublicServiceById = async (id: string) => {
 
 /** User Bookings */
 export const getBookingsByCustomer = async (customerId: string) => {
-  const res = await api.get(`/api/customer/${customerId}`);
+  const res = await api.get(
+    `/api/customers/bookings/api/customer/booking/${customerId}`
+  );
   return res.data.bookings || [];
 };
+
 
 
 export const getSingleBooking = async (bookingId: string) => {

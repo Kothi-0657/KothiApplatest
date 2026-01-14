@@ -14,7 +14,7 @@ const Payments: React.FC = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const res = await adminAPI.get("/api/admin/payments");
+      const res = await adminAPI.get("/api/payments");
       if (res.data.success) {
         setPayments(res.data.payments);
         setFilteredPayments(res.data.payments);
@@ -65,7 +65,7 @@ const Payments: React.FC = () => {
     {
       title: "Direction",
       dataIndex: "direction",
-      render: (d: string) => <Tag>{d.toUpperCase()}</Tag>,
+      render: (d: string) => <Tag color="#1f2937">{d.toUpperCase()}</Tag>,
     },
     {
       title: "Status",
@@ -113,9 +113,36 @@ const Payments: React.FC = () => {
     },
   ];
 
+  // ---------- Styles ----------
+  const containerStyle: React.CSSProperties = {
+    padding: 24,
+    minHeight: "100vh",
+    background: "#0d0d0d",
+    width: "100%",
+    maxWidth: "1200px",
+    margin: "0 auto",
+    color: "#fff",
+  };
+
+  const searchStyle: React.CSSProperties = {
+    marginBottom: 20,
+    maxWidth: 500,
+  };
+
+  const tableStyle: React.CSSProperties = {
+    background: "#111827",
+    borderRadius: 8,
+    overflow: "hidden",
+  };
+
+  const tableHeaderStyle: React.CSSProperties = {
+    backgroundColor: "#1f2937",
+    color: "#fff",
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <h2 style={{ marginBottom: 15 }}>Payments</h2>
+    <div style={containerStyle}>
+      <h2 style={{ marginBottom: 20 }}>Payments</h2>
 
       <Search
         placeholder="Search by ref, booking, payer or payee"
@@ -125,18 +152,23 @@ const Payments: React.FC = () => {
         value={searchText}
         onChange={(e) => onSearch(e.target.value)}
         onSearch={onSearch}
-        style={{ marginBottom: 15, maxWidth: 400 }}
+        style={searchStyle}
       />
 
       {loading ? (
         <Spin size="large" />
       ) : (
-        <Table
-          dataSource={filteredPayments}
-          rowKey="id"
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-        />
+        <div style={tableStyle}>
+          <Table
+            dataSource={filteredPayments}
+            rowKey="id"
+            columns={columns}
+            pagination={{ pageSize: 10 }}
+            bordered
+            style={{ color: "#fff" }}
+            scroll={{ x: 1200 }}
+          />
+        </div>
       )}
     </div>
   );

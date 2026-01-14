@@ -22,7 +22,9 @@ import ServiceBannerSection from "../components/ServiceBannerSection";
 import HomeConstructionSection from "../components/HomeConstructionSection";
 import PaintingScroll from "../components/paintingScroll";
 import ScrollingCities from "../components/ScrollingCities";
-
+import PaintingCalculator from "../components/PaintingCalculator";
+import Workflow from "../components/Workflow";
+import { useNavigation } from "@react-navigation/native";
 // Images
 import logo from "../assets/logoa2.png";
 import profilePlaceholder from "../assets/profilepicplaceholder.png";
@@ -162,8 +164,10 @@ export default function HomeScreen({ navigation }: any) {
           onPressBanner={(banner) => navigation.navigate("Services", { banner })}
         />
 
-        <Separator thickness={2} color="#0b051eff" marginVertical={2} />
+        {/* WORK FLOW */}
+          <Workflow />
 
+        <Separator thickness={2} color="#0b051eff" marginVertical={2} />
         {/* EXCLUSIVE OFFERS */}
         <ExclusiveOffersSection offers={offers} onPressOffer={undefined} />
 
@@ -172,7 +176,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* HOME CONSTRUCTIONS */}
         <HomeConstructionSection constructions={constructionData} onPressConstruction={undefined} />
 
-        <Separator thickness={2} color="#0b051eff" marginVertical={2} />
+        <Separator thickness={2} color="#0b051eff" marginVertical={20} />
 
         {/* PAINTING SCROLL */}
         <PaintingScroll navigation={navigation} />

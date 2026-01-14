@@ -134,6 +134,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: "#0d0d0d",
     minHeight: "100vh",
     color: "#fff",
+    width: "100%",
   },
   headerRow: { display: "flex", alignItems: "center", gap: 12, marginBottom: 16 },
   title: { margin: 0, color: "#d4af37" },

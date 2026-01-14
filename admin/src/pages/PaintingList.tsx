@@ -15,11 +15,13 @@ const SUBJECT_AREAS = ["Wall", "Ceiling"];
 
 /* ---------- Styles (reused from services.tsx) ---------- */
 const containerStyle: React.CSSProperties = {
-  padding: 15,
+  padding: 20,
   minHeight: "100vh",
   background: "linear-gradient(135deg, #000000, #1a1a1a)",
   color: "#fff",
   fontSize: 14,
+  width: "100%",
+  boxSizing: "border-box",
 };
 
 const cardStyle: React.CSSProperties = {
@@ -195,7 +197,7 @@ export default function PaintingList() {
             placeholder="Paint Brand"
             value={form.paint_brand}
             onChange={(e) => handleChange("paint_brand", e.target.value)}
-            style={{ ...inputStyle, flex: 1, minWidth: 220 }}
+            style={{ ...inputStyle, flex: 1, minWidth: 100 }}
           />
 
           <select
@@ -224,7 +226,7 @@ export default function PaintingList() {
             placeholder="Rate (₹)"
             value={form.rate}
             onChange={(e) => handleChange("rate", e.target.value)}
-            style={{ ...inputStyle, width: 120 }}
+            style={{ ...inputStyle, width: 100 }}
           />
 
           {!editing ? (
