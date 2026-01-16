@@ -51,12 +51,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (newToken: string, userData: User) => {
-    setToken(newToken);
-    setUser(userData);
-    localStorage.setItem("rm_token", newToken);
-    localStorage.setItem("rm_user", JSON.stringify(userData));
-  };
+  const login = (token: string, user: any) => {
+  localStorage.setItem("token", token);
+  localStorage.setItem("rm_id", user.id);
+  localStorage.setItem("role", user.role);
+  localStorage.setItem("user", JSON.stringify(user));
+
+  setToken(token);
+  setUser(user);
+};
+
 
   const logout = () => {
     setToken(null);

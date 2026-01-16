@@ -1,20 +1,28 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Input, Button, message } from "antd";
+import { Card, Input, Button, message, Typography } from "antd";
 import axios from "axios";
+
+const { Title } = Typography;
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    console.log("Login button clicked");
+    if (!email || !password) {
+      message.warning("Please enter email and password");
+      return;
+    }
+
+    setLoading(true);
     try {
-     const res = await axios.post("http://localhost:4000/api/admin/auth/login", {
-  email,
-  password,
-});
+      const res = await axios.post(
+        "http://localhost:4000/api/admin/auth/login",
+        { email, password }
+      );
 
       if (res.data?.success) {
         localStorage.setItem("admin_token", res.data.token);
@@ -26,6 +34,8 @@ const LoginPage: React.FC = () => {
     } catch (error: any) {
       console.error("Login error:", error);
       message.error("Invalid credentials or server error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,30 +46,50 @@ const LoginPage: React.FC = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(135deg, #dfe9f3 0%, #ffffff 100%)",
+        background: "linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)",
+        padding: 16,
       }}
     >
       <Card
-        title="Kothi Admin Login"
-        style={{ width: 380, textAlign: "center", borderRadius: 16 }}
+        style={{
+          width: 400,
+          borderRadius: 20,
+          boxShadow: "0 12px 25px rgba(0,0,0,0.15)",
+          padding: "40px 30px",
+          textAlign: "center",
+          backgroundColor: "#ffffff",
+        }}
       >
+        <Title level={3} style={{ marginBottom: 32, color: "#333" }}>
+          Kothi Admin Login
+        </Title>
+
         <Input
           placeholder="Email"
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ marginBottom: 12 }}
+          style={{ marginBottom: 16, borderRadius: 8 }}
         />
+
         <Input.Password
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 24, borderRadius: 8 }}
         />
+
         <Button
           type="primary"
           block
           onClick={handleLogin}
-          style={{ borderRadius: 8 }}
+          loading={loading}
+          style={{
+            borderRadius: 10,
+            padding: "8px 0",
+            fontSize: 16,
+            fontWeight: 500,
+          }}
         >
           Login
         </Button>

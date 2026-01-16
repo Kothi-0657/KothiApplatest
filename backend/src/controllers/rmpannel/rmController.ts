@@ -1,153 +1,149 @@
 import { Request, Response } from "express";
-import db from "../../config/db"; // your PostgreSQL connection
+import db from "../../config/db";
 
-/* -------------------- Get Assigned Inspections -------------------- */
-export const getAssignedInspections = async (req: Request, res: Response) => {
+/* =====================================================
+   GET ASSIGNED LEADS (RM DASHBOARD)
+   GET /rm/leads/assigned?rm_id=UUID
+===================================================== */
+export const getAssignedLeads = async (req: Request, res: Response) => {
   try {
-    const frmId = req.query.frm_id as string;
-    console.log("[RM] Fetching inspections for FRM ID:", frmId);
+    const rmId = req.query.rm_id as string;
+    if (!rmId) return res.status(400).json({ message: "rm_id required" });
 
-    if (!frmId) return res.status(400).json({ message: "frm_id required" });
-
-    const inspections = await db.query(
+    const result = await db.query(
       `
-      SELECT 
-        i.id AS inspection_id,
-        i.scheduled_date,
-        i.location,
-        i.requirements,
-        i.status,
-        i.frm_id,
+      SELECT
         l.id AS lead_id,
-        c.id AS customer_id,
+        l.status,
+        l.stage,
+        l.substage,
+        l.created_at,
         c.name AS customer_name,
         c.phone AS customer_phone,
         c.email AS customer_email
-      FROM inspections i
-      JOIN leads l ON i.lead_id = l.id
-      LEFT JOIN customers c ON l.customer_id = c.id
-      WHERE i.frm_id = $1
-      ORDER BY i.scheduled_date ASC
+      FROM leads l
+      JOIN customers c ON l.customer_id = c.id
+      WHERE l.rm_id = $1
+      ORDER BY l.created_at DESC
       `,
-      [frmId]
+      [rmId]
     );
 
-    console.log(`[RM] Inspections fetched: ${inspections.rows.length}`);
-    res.json(inspections.rows);
+    res.json(result.rows);
   } catch (err) {
-    console.error("[RM] Error in getAssignedInspections:", err);
+    console.error("[RM] getAssignedLeads error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-/* -------------------- Log Inspection Action -------------------- */
-export const logInspectionAction = async (req: Request, res: Response) => {
+/* =====================================================
+   LOG RM ACTION / CALL / FOLLOW-UP
+   POST /rm/leads/log
+===================================================== */
+export const logLeadAction = async (req: Request, res: Response) => {
   try {
-    const { inspection_id, action, stage, substage, remarks, timestamp } = req.body;
+    const { lead_id, action, stage, substage, remarks, created_by } = req.body;
 
-    if (!inspection_id || !action)
-      return res.status(400).json({ message: "Required fields missing" });
+    if (!lead_id || !action)
+      return res.status(400).json({ message: "lead_id & action required" });
 
     await db.query(
       `
-      INSERT INTO call_logs (inspection_id, action, stage, substage, remarks, timestamp)
+      INSERT INTO call_logs
+      (lead_id, action, stage, substage, remarks, created_by)
       VALUES ($1, $2, $3, $4, $5, $6)
       `,
-      [inspection_id, action, stage, substage || null, remarks || null, timestamp]
+      [
+        lead_id,
+        action,
+        stage || null,
+        substage || null,
+        remarks || null,
+        created_by,
+      ]
     );
 
-    res.json({ message: "Action logged successfully" });
+    // optional: update lead stage
+    if (stage) {
+      await db.query(
+        `
+        UPDATE leads
+        SET stage = $1, substage = $2
+        WHERE id = $3
+        `,
+        [stage, substage || null, lead_id]
+      );
+    }
+
+    res.json({ message: "Lead action logged" });
   } catch (err) {
-    console.error("[RM] Error in logInspectionAction:", err);
+    console.error("[RM] logLeadAction error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-/* -------------------- Get Inspection Logs -------------------- */
-export const getInspectionLogs = async (req: Request, res: Response) => {
+/* =====================================================
+   CREATE INSPECTION (RM → FRM HANDOFF)
+   POST /rm/inspections/create
+===================================================== */
+export const createInspection = async (req: Request, res: Response) => {
   try {
-    const inspectionId = req.query.inspection_id as string;
+    const {
+      lead_id,
+      frm_id,
+      scheduled_date,
+      location,
+      requirements,
+      created_by,
+    } = req.body;
 
-    if (!inspectionId) return res.status(400).json({ message: "inspection_id required" });
+    if (!lead_id || !frm_id || !scheduled_date)
+      return res.status(400).json({ message: "Missing fields" });
 
-    const logs = await db.query(
+    await db.query(
       `
-      SELECT *
-      FROM call_logs
-      WHERE inspection_id = $1
-      ORDER BY timestamp ASC
+      INSERT INTO inspections
+      (lead_id, frm_id, scheduled_date, location, requirements, status, created_by)
+      VALUES ($1, $2, $3, $4, $5, 'SCHEDULED', $6)
       `,
-      [inspectionId]
+      [lead_id, frm_id, scheduled_date, location, requirements || null, created_by]
     );
 
-    res.json(logs.rows);
+    // Update lead status
+    await db.query(
+      `
+      UPDATE leads
+      SET status = 'INSPECTION_SCHEDULED'
+      WHERE id = $1
+      `,
+      [lead_id]
+    );
+
+    res.json({ message: "Inspection scheduled successfully" });
   } catch (err) {
-    console.error("[RM] Error in getInspectionLogs:", err);
+    console.error("[RM] createInspection error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-/* -------------------- Get Active FRMs -------------------- */
+/* =====================================================
+   GET ACTIVE FRMs (RM DROPDOWN)
+   GET /rm/frms
+===================================================== */
 export const getFrms = async (_req: Request, res: Response) => {
   try {
     const result = await db.query(
       `
-      SELECT id, name, email, phone
+      SELECT id, name, phone
       FROM rms
-      WHERE status = 'active'
+      WHERE role = 'FRM' AND status = 'active'
       ORDER BY name
       `
     );
 
     res.json(result.rows);
   } catch (err) {
-    console.error("[RM] Error in getFrms:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-/* -------------------- Schedule / Update Inspection -------------------- */
-export const scheduleInspection = async (req: Request, res: Response) => {
-  try {
-    const { inspection_id, frm_id, scheduled_date, location, remarks, updated_by } = req.body;
-
-    if (!inspection_id || !frm_id || !scheduled_date)
-      return res.status(400).json({ message: "Missing fields" });
-
-    // 1. Get current inspection
-    const current = await db.query(
-      `SELECT frm_id FROM inspections WHERE id = $1`,
-      [inspection_id]
-    );
-
-    const oldFrmId = current.rows[0]?.frm_id || null;
-
-    // 2. Update inspection details
-    await db.query(
-      `
-      UPDATE inspections
-      SET frm_id = $1,
-          scheduled_date = $2,
-          location = $3,
-          updated_at = NOW()
-      WHERE id = $4
-      `,
-      [frm_id, scheduled_date, location, inspection_id]
-    );
-
-    // 3. Log assignment changes
-    await db.query(
-      `
-      INSERT INTO inspection_assignment_logs
-      (inspection_id, old_frm_id, new_frm_id, scheduled_date, location, updated_by, remarks)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      `,
-      [inspection_id, oldFrmId, frm_id, scheduled_date, location, updated_by, remarks || null]
-    );
-
-    res.json({ message: "Inspection scheduled & assigned successfully" });
-  } catch (err) {
-    console.error("[RM] Error in scheduleInspection:", err);
+    console.error("[RM] getFrms error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

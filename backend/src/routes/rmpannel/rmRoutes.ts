@@ -1,27 +1,39 @@
 import { Router } from "express";
 import {
-  getAssignedInspections,
-  logInspectionAction,
-  getInspectionLogs,
+  getAssignedLeads,
+  logLeadAction,
+  createInspection,
   getFrms,
-  scheduleInspection
 } from "../../controllers/rmpannel/rmController";
 
 const router = Router();
 
-// Fetch inspections assigned to an FRM
-router.get("/inspections/assigned", getAssignedInspections);
+/* ============================
+   RM DASHBOARD
+============================ */
 
-// Log an action taken on an inspection
-router.post("/inspections/log", logInspectionAction);
+// Get leads assigned to RM
+// GET /api/rm/leads/assigned?rm_id=UUID
+router.get("/leads/assigned", getAssignedLeads);
 
-// Fetch logs for a specific inspection
-router.get("/inspections/logs", getInspectionLogs);
+// Log RM call / follow-up action
+// POST /api/rm/leads/log
+router.post("/leads/log", logLeadAction);
+
+/* ============================
+   INSPECTION CREATION (RM → FRM)
+============================ */
+
+// Create inspection & assign FRM
+// POST /api/rm/inspections/create
+router.post("/inspections/create", createInspection);
+
+/* ============================
+   FRM DROPDOWN
+============================ */
 
 // Fetch active FRMs
+// GET /api/rm/frms
 router.get("/frms", getFrms);
-
-// Schedule / update an inspection
-router.post("/inspections/schedule", scheduleInspection);
 
 export default router;

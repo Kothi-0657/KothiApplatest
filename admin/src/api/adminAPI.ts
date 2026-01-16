@@ -1,14 +1,14 @@
+// src/api/adminAPI.ts
 import axios from "axios";
 
-const API_URL =
-  import.meta.env.VITE_ADMIN_API || "http://localhost:4000";
+const API_URL = import.meta.env.VITE_ADMIN_API || "http://localhost:4000";
 
 const adminAPI = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach admin token
+// Attach admin token to every request
 adminAPI.interceptors.request.use((config) => {
   const token = localStorage.getItem("admin_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -141,6 +141,48 @@ export const changeAdminPassword = async (
     oldPassword,
     newPassword,
   });
+  return res.data;
+};
+
+/* =========================
+   RM & FRM USERS (ADMIN)
+========================= */
+export const fetchRMs = async () => {
+  const res = await adminAPI.get("/api/admin/user-management/rms");
+  // Map backend response to match frontend User interface
+  return res.data.rms.map((u: any) => ({
+    id: u.id.toString(),
+    email: u.email,
+    status: u.isActive ? "active" : "inactive",
+  }));
+};
+
+export const fetchFRMs = async () => {
+  const res = await adminAPI.get("/api/admin/user-management/frms");
+  return res.data.frms.map((u: any) => ({
+    id: u.id.toString(),
+    email: u.email,
+    status: u.isActive ? "active" : "inactive",
+  }));
+};
+
+export const createRM = async (data: { email: string }) => {
+  const res = await adminAPI.post("/api/admin/user-management/rms", data);
+  return res.data;
+};
+
+export const createFRM = async (data: { email: string }) => {
+  const res = await adminAPI.post("/api/admin/user-management/frms", data);
+  return res.data;
+};
+
+export const toggleUserStatus = async (id: string) => {
+  const res = await adminAPI.patch(`/api/admin/user-management/${id}/toggle`);
+  return res.data;
+};
+
+export const deleteUser = async (id: string) => {
+  const res = await adminAPI.delete(`/api/admin/user-management/${id}`);
   return res.data;
 };
 

@@ -1,85 +1,143 @@
-import React from "react";
-import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
-import Inspections from "../screens/inspections";
-import SummaryPanel from "../components/Summarypannel";
+// src/screens/Dashboard.tsx
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
+import { useNavigate } from "react-router-dom";
+import { rmApi } from "../api/rmApi";
 
+/* ===================== TYPES ===================== */
+interface DashboardStats {
+  total_leads: number;
+  new_leads: number;
+  inspections_scheduled: number;
+}
+
+/* ===================== COMPONENT ===================== */
 const Dashboard = () => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const rmId = localStorage.getItem("rm_id");
 
-  const menu = [
-    { label: "Summary", path: "summary" },
-    { label: "Inspections", path: "inspections" },
-    { label: "Bookings", path: "bookings" },
-    { label: "Payments", path: "payments" },
-    { label: "Quotes", path: "quotes" },
-    { label: "Work Assessment", path: "assessment" },
-  ];
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  /* ===================== AUTH GUARD ===================== */
+  useEffect(() => {
+    if (!rmId) {
+      console.error("❌ RM not logged in");
+      navigate("/login");
+      return;
+    }
+    fetchDashboardStats();
+  }, []);
+
+  /* ===================== FETCH ===================== */
+  const fetchDashboardStats = async () => {
+    try {
+      const res = await rmApi(`/rm/dashboard?rm_id=${rmId}`);
+      setStats(res);
+    } catch (err) {
+      console.error("❌ Failed to load dashboard", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ===================== UI ===================== */
+  if (loading)
+    return (
+      <ActivityIndicator size="large" style={{ marginTop: 60 }} />
+    );
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#020617" }}>
-      {/* Sidebar */}
-      <div style={{ width: 240, background: "#020617", padding: 20 }}>
-        <h3 style={{ color: "#E5E7EB" }}>RM Panel</h3>
-        <p style={{ color: "#94A3B8", marginBottom: 20 }}>{user?.name}</p>
+    <View style={styles.container}>
+      <Text style={styles.title}>Relationship Manager</Text>
+      <Text style={styles.subtitle}>Dashboard</Text>
 
-        {menu.map((m) => {
-          const active = location.pathname.includes(m.path);
-          return (
-            <motion.div
-              key={m.path}
-              whileHover={{ scale: 1.03 }}
-              onClick={() => navigate(`/dashboard/${m.path}`)}
-              style={{
-                padding: "12px 14px",
-                marginBottom: 10,
-                borderRadius: 10,
-                cursor: "pointer",
-                background: active ? "#1D4ED8" : "#020617",
-                color: "#E5E7EB",
-              }}
-            >
-              {m.label}
-            </motion.div>
-          );
-        })}
+      {/* ===================== STATS ===================== */}
+      <View style={styles.statsRow}>
+        <View style={styles.card}>
+          <Text style={styles.cardValue}>{stats?.total_leads ?? 0}</Text>
+          <Text style={styles.cardLabel}>Total Leads</Text>
+        </View>
 
-        <button
-          onClick={logout}
-          style={{
-            marginTop: 30,
-            background: "#EF4444",
-            color: "#fff",
-            padding: 10,
-            width: "100%",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
-      </div>
+        <View style={styles.card}>
+          <Text style={styles.cardValue}>{stats?.new_leads ?? 0}</Text>
+          <Text style={styles.cardLabel}>New</Text>
+        </View>
 
-      {/* Content */}
-      <motion.div
-        style={{ flex: 1, padding: 20, overflowY: "auto" }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        <View style={styles.card}>
+          <Text style={styles.cardValue}>
+            {stats?.inspections_scheduled ?? 0}
+          </Text>
+          <Text style={styles.cardLabel}>Scheduled</Text>
+        </View>
+      </View>
+
+      {/* ===================== PRIMARY ACTION ===================== */}
+      <TouchableOpacity
+        style={styles.primaryBtn}
+        onPress={() => navigate("/leads")}
       >
-        <Routes>
-          <Route
-            path="inspections"
-            element={<Inspections frmId={user?.id!} userId={""} />}
-          />
-          <Route path="*" element={<h2 style={{ color: "#E5E7EB" }}>Select a module</h2>} />
-        </Routes>
-      </motion.div>
-    </div>
+        <Text style={styles.primaryText}>Go to Leads</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 export default Dashboard;
+
+/* ===================== STYLES ===================== */
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0F172A",
+    padding: 20,
+  },
+  title: {
+    color: "#E5E7EB",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  subtitle: {
+    color: "#94A3B8",
+    marginBottom: 20,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  card: {
+    backgroundColor: "#020617",
+    padding: 16,
+    borderRadius: 12,
+    width: "30%",
+    alignItems: "center",
+  },
+  cardValue: {
+    color: "#22C55E",
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  cardLabel: {
+    color: "#94A3B8",
+    marginTop: 6,
+    fontSize: 12,
+  },
+  primaryBtn: {
+    marginTop: 30,
+    backgroundColor: "#2563EB",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  primaryText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});

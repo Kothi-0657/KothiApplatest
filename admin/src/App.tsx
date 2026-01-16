@@ -10,6 +10,8 @@ import Vendors from "./pages/vendors";
 import Bookings from "./pages/Bookings";
 import LoginPage from "./pages/LoginPage";
 import PaintingList from "./pages/PaintingList";
+import UserManagement from "./pages/UserManagement";
+
 
 export default function App() {
   const isAuthenticated = !!localStorage.getItem("admin_token");
@@ -31,6 +33,9 @@ export default function App() {
             <Route path="vendors" element={<Vendors />} />
             <Route path="bookings" element={<Bookings />} />
             <Route path="paintinglist" element={<PaintingList />} />
+            <Route path="user-management" element={<UserManagement />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          
           </Route>
         ) : (
           <Route path="*" element={<Navigate to="/login" replace />} />

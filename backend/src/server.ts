@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 
 import adminRoutes from "./routes/adminpannel/adminRoutes";
+
 import serviceRoutes from "./routes/adminpannel/serviceRoutes";
 import customersRoutes from "./routes/adminpannel/customersRoutes";
 import bookingRoutes from "./routes/adminpannel/bookingRoutes";
@@ -19,8 +20,10 @@ import authRoutes from "./routes/authRoutes";
 import paintingRatesRoutes from "./routes/adminpannel/paintingRatesRoutes";
 import calpaintingRotutes from "./routes/mobilepannel/calpaintingRoutes";
 import rmRoutes from "./routes/rmpannel/rmRoutes";
+import adminusermanagementRoutes from "./routes/adminpannel/adminUserManagementRoutes";
 
 import pool from "./config/db";
+import adminUserManagementRoutes from "./routes/adminpannel/adminUserManagementRoutes";
 export { pool };
 
 const app = express();
@@ -37,6 +40,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/public/services", publicServicesRoutes);
 app.use("/health", (_req, res) => res.json({ ok: true }));
 
@@ -53,10 +57,10 @@ app.use("/api/painting", paintingRoutes);
 app.use("/api/painting-rates", paintingRatesRoutes);
 app.use("/api/calculate-painting", calpaintingRotutes);
 app.use("/api/customers/bookings", customerBookingRoutes);
-
+app.use("/api/admin/user-management", adminUserManagementRoutes);
 // RM Panel routes
 
-app.use("/api/rm-panel", rmRoutes);
+app.use("/api/rm", rmRoutes);
 
 // Start server
 const port = Number(process.env.PORT || 4000);
